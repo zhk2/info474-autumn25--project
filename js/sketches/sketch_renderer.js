@@ -26,7 +26,7 @@
                 return;
             }
 
-            if (ai === 3) {
+            if (ai === 4) {
                 if (window.sketch_tariff) {
                     if (typeof window.sketch_tariff.setupControls === 'function' && !window.sketch_tariff._controlsSetup) {
                         window.sketch_tariff.setupControls(p);
@@ -39,7 +39,7 @@
                 }
             }
 
-            if (ai === 4) {
+            if (ai === 5) {
                 if (window.sketch_gdp) {
                     if (typeof window.sketch_gdp.setupControls === "function" && !window.sketch_gdp._controlsSetup) {
                         window.sketch_gdp.setupControls(p);
@@ -51,6 +51,21 @@
                     }
                 }
             }
+            
+            if (ai === 6) {
+                if (window.sketch_tariffs_consumers) {
+                    if (typeof window.sketch_tariffs_consumers.setupControls === "function" && !window.sketch_tariffs_consumers._controlsSetup) {
+                        window.sketch_tariffs_consumers.setupControls(p);
+                        window.sketch_tariffs_consumers._controlsSetup = true;
+                    }
+                    if (typeof window.sketch_tariffs_consumers.draw === "function") {
+                        window.sketch_tariffs_consumers.draw(p, manager, ai, progress);
+                        return;
+                    }
+                }
+            }
+
+
             if (ai === 7) {
                 if (window.sketch_global_trade_forecast) {
                     if (typeof window.sketch_global_trade_forecast === "function" && !window.sketch_global_trade_forecast) {
