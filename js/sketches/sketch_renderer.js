@@ -51,25 +51,25 @@
                     }
                 }
             }
+            if (ai === 5) {
+                if (window.sketch_global_trade_forecast) {
+                    if (typeof window.sketch_global_trade_forecast === "function" && !window.sketch_global_trade_forecast) {
+                        window.sketch_global_trade_forecast.setupControls(p);
+                        window.sketch_global_trade_forecast._controlsSetup = true;
+                    }
+                    if (typeof window.sketch_global_trade_forecast.draw === "function") {
+                        window.sketch_global_trade_forecast.draw(p, manager, ai, progress);
+                        return;
+                    }
+                }
+            }
+
 
             if (ai >= 5 && ai < 7) {
                 window.VizScatter.draw(p, manager, ai, progress);
                 return;
             }
 
-            if (ai === 7) {
-                if (window.sketch_global_trade_forecast) {
-                    if (typeof window.sketch_global_trade_forecast.setupControls === 'function' &&
-                        !window.sketch_global_trade_forecast._controlsSetup) {
-                        window.sketch_global_trade_forecast.setupControls(p);
-                        window.sketch_global_trade_forecast._controlsSetup = true;
-                    }
-                    if (typeof window.sketch_global_trade_forecast.draw === 'function') {
-                        window.sketch_global_trade_forecast.draw(p, manager, ai, progress);
-                        return;
-                    }
-                }
-            }
         }
     };
 })();
