@@ -25,18 +25,6 @@
                 window.VizTitle.draw(p, manager, ai, progress);
                 return;
             }
-            // bar chart on data-active-index="4" — prefer VizBarGraph, fallback to VizBar
-            if (ai === 4) {
-                if (window.VizBarGraph && typeof window.VizBarGraph.draw === 'function') {
-                    window.VizBarGraph.draw(p, manager, ai, progress);
-                    return;
-                }
-                if (window.VizBar && typeof window.VizBar.draw === 'function') {
-                    window.VizBar.draw(p, manager, ai, progress);
-                    return;
-                }
-            }
-
             if (ai === 3) {
                 if (window.sketch_tariff) {
                     if (typeof window.sketch_tariff.setupControls === 'function' && !window.sketch_tariff._controlsSetup) {
