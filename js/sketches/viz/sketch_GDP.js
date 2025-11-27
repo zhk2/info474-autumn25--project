@@ -19,7 +19,6 @@
     setupControls: function (p) {
       if (this._controlsSetup) return;
 
-      // Drawn *inside canvas* like sketch_tariff
       this.buttonBoxes = [
         { year: "2023", x: 60, y: 20, w: 60, h: 30 },
         { year: "2024", x: 130, y: 20, w: 60, h: 30 },
@@ -54,20 +53,20 @@
       p.background(255);
       p.textFont("Arial");
 
-      // === TITLE ===
+      // title
       p.textAlign(p.CENTER, p.CENTER);
       p.textSize(22);
       p.fill(0);
       p.text("GDP of Different Countries 2023–2025", 450, 45);
 
-      // === SUBTITLE WHEN TARIFFS (2025) ===
+      // 2025 tariff note
       if (this.selectedYear === "2025") {
         p.textSize(16);
         p.fill("#cc0000");
         p.text("Tariffs have been placed", 450, 70);
       }
 
-      // === YEAR BUTTONS (in canvas) ===
+      // configuring buttons
       this.buttonBoxes.forEach(btn => {
         p.stroke(0);
         p.strokeWeight(1);
@@ -80,7 +79,7 @@
         p.text(btn.year, btn.x + btn.w / 2, btn.y + btn.h / 2);
       });
 
-      // === DATA & SCALES ===
+      // getting the data
       const selectedYear = this.selectedYear;
       const data = this.data;
 
@@ -90,7 +89,7 @@
 
       const maxValue = p.max(data.map(d => d["gdp_" + selectedYear]));
 
-      // === DRAW BARS ===
+      // bar graph
       data.forEach((d, i) => {
         const x = margin.left + i * xStep + xStep * 0.2;
         const baseY = margin.top + chartHeight;
@@ -115,7 +114,7 @@
         p.text(d.country, x + barWidth / 2, baseY + 15);
       });
 
-      // === Y GRID & LABELS ===
+      // labels
       p.stroke(200);
       for (let i = 0; i <= 5; i++) {
         const yPos = margin.top + (chartHeight / 5) * i;

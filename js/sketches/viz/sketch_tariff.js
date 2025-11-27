@@ -18,6 +18,7 @@
 
     setupControls: function (p) {
       if (this._controlsSetup) return;
+      p.noLoop();
 
       this.buttonBoxes = [
         { year: "2023", x: 60, y: 20, w: 60, h: 30 },
@@ -52,20 +53,20 @@
       p.push();
       p.background(255);
 
-      // ---- TITLE ----
+      // title
       p.textAlign(p.CENTER, p.CENTER);
       p.textSize(15);
       p.fill(0);
       p.text("Imports and Exports of Different Countries 2023–2025", 450, 45);
 
-      // ---- SUBTITLE FOR 2025 ----
+      // 2025 note
       if (this.selectedYear === "2025") {
         p.textSize(16);
         p.fill("#cc0000");
         p.text("Tariffs have been placed", 450, 70);
       }
 
-      // ---- YEAR BUTTONS ----
+      // button for years
       this.buttonBoxes.forEach(btn => {
         p.stroke(0);
         p.strokeWeight(1);
@@ -88,7 +89,7 @@
         data.map(d => d[`imports_${selectedYear}`] + d[`exports_${selectedYear}`])
       );
 
-      // ---- DRAW STACKED BARS ----
+      // stacked bar
       data.forEach((d, i) => {
         const x = margin.left + i * xStep + xStep * 0.2;
         const baseY = margin.top + chartHeight;
@@ -105,7 +106,7 @@
         p.fill(255);
         p.text(imp, x + barWidth / 2, baseY - impH / 2);
 
-        // Exports stacked on top
+        // Exports
         p.fill("#ff7f0e");
         p.rect(x, baseY - impH - expH, barWidth, expH);
         p.fill(255);
@@ -117,7 +118,7 @@
         p.text(d.country, x + barWidth / 2, baseY + 15);
       });
 
-      // ---- Y GRID LINES ----
+
       p.stroke(200);
       for (let i = 0; i <= 5; i++) {
         const yPos = margin.top + (chartHeight / 5) * i;
@@ -128,7 +129,7 @@
         p.stroke(200);
       }
 
-      // ---- LEGEND ----
+      // legend
       const lx = margin.left;
       const ly = 70;
 
