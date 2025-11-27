@@ -3,6 +3,7 @@
 // Story: "How Tariffs Affect Consumers: Which Goods Are Most Exposed?"
 
 (function () {
+    window.
     var sketch = function (p) {
         var table;
         var usaData = {};
