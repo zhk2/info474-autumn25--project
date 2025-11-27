@@ -1,9 +1,7 @@
 (function() {
-  window.sketch_gdp = {
-    selectedYear: 2023,
-    _controlsSetup: false,
-
-    data: [
+  var GDPGraph = function(p) {
+    let selectedYear =  2023
+    let data = [
       { country: "CHN", gdp_2023: 18000, gdp_2024: 18800, gdp_2025: 19500 },
       { country: "MEX", gdp_2023: 1300, gdp_2024: 1380, gdp_2025: 1450 },
       { country: "CAN", gdp_2023: 2200, gdp_2024: 2300, gdp_2025: 2400 },
@@ -14,10 +12,9 @@
       { country: "IND", gdp_2023: 3500, gdp_2024: 3800, gdp_2025: 4100 },
       { country: "NGA", gdp_2023: 500, gdp_2024: 540, gdp_2025: 580 },
       { country: "KOR", gdp_2023: 1800, gdp_2024: 1900, gdp_2025: 2000 }
-    ],
-    setupControls: function(p) {
-      if (this._controlsSetup) return;
+    ]
 
+    p.setup = function(p) {
       const parent = p.canvas.parentNode || document.body;
 
       const container = p.createDiv();
@@ -36,8 +33,9 @@
       });
 
       this._controlsSetup = true;
-    },
-    draw: function(p) {
+    }
+    
+    p.draw = function(p) {
       const margin = { top: 90, right: 50, bottom: 80, left: 70 };
       const chartWidth = 900 - margin.left - margin.right;
       const chartHeight = 500 - margin.top - margin.bottom;
@@ -91,9 +89,7 @@
         );
         p.stroke(200);
       }
-
       p.pop();
-
       }
   };
 })();

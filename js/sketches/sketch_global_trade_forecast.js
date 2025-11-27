@@ -1,5 +1,5 @@
-// sketch_global_trade_forecast.js
-// Story: "Where Are We Headed? Global Trade Over Time"
+// Global Trade Over time
+// Author: 
 
 (function () {
   var sketch = function (p) {

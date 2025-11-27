@@ -4,23 +4,24 @@
 <head>
   <title>Scrolling Sections</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <!-- Styles removed for now. Needs to be re-written. -->
+  <!-- <link rel="stylesheet" type="text/css" href="css/style.css" />  -->
 </head>
 
 <body>
   <div class="container">
-    <div id='graphic'>
-      <h1 class="text-success">Sketches</h1>
-      <div id='sections'>
+    <h1 class="text-primary">Sketches</h1>
+    <div id='sections'>
+      <div id="viz-container-1"></div>
+      <div id="viz-container-2"></div>
 
-      </div>
+
     </div>
   </div>
-
-
   <!-- p5.js (using CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
  
+  <!-- ** REMOVED FOR TIME BEING, trying out new format ** -->
   <!-- orchestrator (wires scroller -> sketch) -->
   <!-- <script src="js/helpers/sections.js"></script> -->
 
@@ -29,19 +30,22 @@
 
   <!-- sketches (example renderer) -->
   <!-- <script src="js/sketches/examples/sketch_grid.js"></script> -->
+  <!-- ** END ** -->
 
-  <!-- sketches (renderers): UPDATE HERE FOR PROJECT -->
-  <script src="js/sketches/viz/viz_title.js"></script>
+  <!-- sketches (renderers) -->
+  <!-- <script src="js/sketches/viz/viz_title.js"></script>
   <script src="js/sketches/viz/viz_scatter.js"></script>
-  <script src="js/sketches/viz/viz_stackedbar.js"></script>
   <script src="js/sketches/viz/viz_heatmap.js"></script>
-  <script src="js/sketches/viz/sketch_tariff.js"></script>
-   <script src="js/sketches/viz/sketch_GDP.js"></script>
   <script src="js/sketches/viz/viz_bar.js"></script>
-  <script src="js/sketches/viz/viz_bargraph.js"></script>
-  <script src="js/sketches/sketch_renderer.js"></script>
+  <script src="js/sketches/viz/viz_bargraph.js"></script> -->
 
+  <!-- VIZ-es -->
+  <script src="js/sketches/sketch_GDPbar.js"></script>
+  <!-- <script src="js/sketches/sketch_renderer.js"></script> -->
+  <!-- <script src="js/sketches/sketch_tariff.js"></script> -->
+  <!-- <script src="js/sketches/sketch_GDP.js"></script> -->
 
+  <!-- main (runs after sketches are initialized) -->
+  <script src="main.js"></script>
 </body>
-
 </html>
