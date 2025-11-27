@@ -40,7 +40,7 @@
       this._controlsSetup = true;
     },
 
-    draw: function(p, manager) {
+     draw: function(p, manager) {
       const margin = { top: 100, right: 50, bottom: 80, left: 60 }; // more top margin for title
       const chartWidth = 900 - margin.left - margin.right;
       const chartHeight = 500 - margin.top - margin.bottom;
@@ -50,12 +50,12 @@
       p.textFont('Arial');
       p.textAlign(p.CENTER, p.CENTER);
 
-      // --- Title ---
+      // Title
       p.fill(0);
       p.textSize(20);
       p.text("Imports and Exports of Different Countries 2023-2025", margin.left + chartWidth/2, 30);
 
-      // --- Tariff note for 2025 ---
+      // Tariff note for 2025
       if (this.selectedYear === '2025') {
         p.fill('#d62728'); // red
         p.textSize(16);
@@ -95,7 +95,6 @@
         p.fill(0);
         p.text(d.country, x + barWidth / 2, y + 15);
       });
-
       // Y axis lines and labels
       p.stroke(200);
       p.strokeWeight(1);
@@ -107,8 +106,7 @@
         p.text(Math.round(maxValue * (1 - i / 5)), margin.left - 30, yPos);
         p.stroke(200);
       }
-
-      // Legend
+        // Legend
       const legendX = margin.left;
       const legendY = 70;
 
@@ -124,6 +122,7 @@
       p.text('exports', legendX + 145, legendY + 10);
 
       p.pop();
+      
     }
   };
 })();
@@ -133,3 +132,6 @@
 
 
 
+
+
+   

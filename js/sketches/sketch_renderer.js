@@ -48,8 +48,20 @@
                      return;
                     }
                     
-    }
-}
+                }
+            }
+            if (ai === 4) {
+                if (window.sketch_gdp) {
+                    if (typeof window.sketch_gdp.setupControls === "function" && !window.sketch_gdp._controlsSetup) {
+                        window.sketch_gdp.setupControls(p);
+                        window.sketch_gdp._controlsSetup = true;
+                     }
+                    if (typeof window.sketch_gdp.draw === "function") {
+                        window.sketch_gdp.draw(p, manager, ai, progress);
+                        return;
+                    }
+                }
+            }
 
 
 
