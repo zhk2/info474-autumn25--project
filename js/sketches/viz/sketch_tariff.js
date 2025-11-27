@@ -54,7 +54,7 @@
 
       // ---- TITLE ----
       p.textAlign(p.CENTER, p.CENTER);
-      p.textSize(22);
+      p.textSize(15);
       p.fill(0);
       p.text("Imports and Exports of Different Countries 2023–2025", 450, 45);
 
