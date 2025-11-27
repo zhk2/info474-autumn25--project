@@ -25,15 +25,6 @@
                 window.VizTitle.draw(p, manager, ai, progress);
                 return;
             }
-
-
-            // treemap on data-active-index="3"
-            if (ai === 3) {
-                if (window.VizTreemap && typeof window.VizTreemap.draw === 'function') {
-                    window.VizTreemap.draw(p, manager, ai, progress);
-                    return;
-                }
-            }
             // bar chart on data-active-index="4" — prefer VizBarGraph, fallback to VizBar
             if (ai === 4) {
                 if (window.VizBarGraph && typeof window.VizBarGraph.draw === 'function') {
@@ -45,6 +36,22 @@
                     return;
                 }
             }
+
+            if (ai === 3) {
+                if (window.sketch_tariff) {
+                    if (typeof window.sketch_tariff.setupControls === 'function' && !window.sketch_tariff._controlsSetup) {
+                        window.sketch_tariff.setupControls(p);
+                        window.sketch_tariff._controlsSetup = true; // flag so it doesn’t recreate every frame
+                    }
+                 if (typeof window.sketch_tariff.draw === 'function') {
+                     window.sketch_tariff.draw(p, manager, ai, progress);
+                     return;
+                    }
+                    
+    }
+}
+
+
 
             if (ai >= 5 && ai < 7) {
                 window.VizScatter.draw(p, manager, ai, progress);
