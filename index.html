@@ -3,67 +3,16 @@
 
 <head>
   <title>Scrolling Sections</title>
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
 
 <body>
   <div class="container">
     <div id='graphic'>
+      <h1 class="text-success">Sketches</h1>
       <div id='sections'>
-        <section class="step" data-active-index="0">
-          <div class="title">The Trade War</div>
-          Learn about the US Tariffs on different parts of the world.<br /><br />
-         <!-- Your mission is to create an interactive article using P5.js</b>. -->
-        </section>
-        <section class="step" data-active-index="1">
-          <div class="title">Overview</div>
-          <ul>
-          <li>Introduction to Tariffs</li>
-          <li>Tariff Percentages by Country</li>
-          <li>GDP by Country</li>
-          <li>Gunner's vis 1</li>
-          <li>Gunner's vis 2</li>
-          </ul>
 
-        </section>
-        <section class="step" data-active-index="2">
-          <div class="title">Introduction to Tariffs</div>
-          A Tariff is a tax that is implemented from one country to another country on its good and services. 
-         <!-- Tariffs can have multiple purposes such as protecting domestic businesses, raising revenue, and reducing deficits. -->
-   
-        </section>
-        <section class="step" data-active-index="3">
-          <div class="title">Tariffs</div>
-          These are some of the countries that have a tariff implemented by the US. The percentage 
-          indicates the tax rate.
-        </section>
-        <section class="step" data-active-index="4">
-          <div class="title">GDP (USD) Across Countries in 2024 </div>
-          This is the GDP in USD of the countries that have tariffs placed on them in 2024.
-        </section>
-        <section class="step" data-active-index="5">
-          <div class="title">Same visualization multiple sections</div>
-          Some visualizations may be relevant to multiple sections. You can reuse the same visualization
-          across different sections to reinforce key points. Or build on the previous visualization to just add on.
-        </section>
-        <div id="extra-space">
-        </div>
-        <section class="step" data-active-index="6">
-          <div class="title">Examples</div>
-          There is two examples in this code. One is a grid of circles that changes color
-          based on the section index. The other is a scatter plot and bar chart that
-          shows random data points. You can modify or replace these examples with your own visualizations.
-          Make sure you read both source files to understand how they work.
-        </section>
-        <section class="step" data-active-index="7">
-          <div class="title">Best of Luck in the Project!</div>
-          You are now ready to start building your interactive article. Good luck!
-        </section>
-      </div>
-      <div id='vis' class='vis-hidden'>
-      </div>
-      <div id="extra-space">
       </div>
     </div>
   </div>
@@ -71,19 +20,15 @@
 
   <!-- p5.js (using CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
-  <!-- helpers (data/loading, scroller, visual controller) -->
-  <script src="js/helpers/data_loader.js"></script>
-  <script src="js/helpers/scroller.js"></script>
-  <script src="js/helpers/visual_controller.js"></script>
-
+ 
   <!-- orchestrator (wires scroller -> sketch) -->
-  <script src="js/helpers/sections.js"></script>
+  <!-- <script src="js/helpers/sections.js"></script> -->
 
   <!-- sketches (manager) -->
-  <script src="js/sketches/sketch_manager.js"></script>
+  <!-- <script src="js/sketches/sketch_manager.js"></script> -->
 
   <!-- sketches (example renderer) -->
-  <script src="js/sketches/examples/sketch_grid.js"></script>
+  <!-- <script src="js/sketches/examples/sketch_grid.js"></script> -->
 
   <!-- sketches (renderers): UPDATE HERE FOR PROJECT -->
   <script src="js/sketches/viz/viz_title.js"></script>
