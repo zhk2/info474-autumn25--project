@@ -1,6 +1,8 @@
 (function() {
-  var GDPGraph = function(p) {
-    let selectedYear =  2023
+  let GDPGraph = function(p) {
+    // Declare all variables at the top
+    let selectedYear = 2023;
+    let yearSelect;
     let data = [
       { country: "CHN", gdp_2023: 18000, gdp_2024: 18800, gdp_2025: 19500 },
       { country: "MEX", gdp_2023: 1300, gdp_2024: 1380, gdp_2025: 1450 },
@@ -12,35 +14,29 @@
       { country: "IND", gdp_2023: 3500, gdp_2024: 3800, gdp_2025: 4100 },
       { country: "NGA", gdp_2023: 500, gdp_2024: 540, gdp_2025: 580 },
       { country: "KOR", gdp_2023: 1800, gdp_2024: 1900, gdp_2025: 2000 }
-    ]
+    ];
 
-    p.setup = function(p) {
-      const parent = p.canvas.parentNode || document.body;
-
-      const container = p.createDiv();
-      container.parent(parent);
-      container.style("display", "flex");
-      container.style("gap", "10px");
-      container.style("margin-bottom", "10px");
-
-      ["2023", "2024", "2025"].forEach(year => {
-        const btn = p.createButton(year);
-        btn.parent(container);
-        btn.mousePressed(() => {
-          this.selectedYear = year;
-          p.redraw();
-        });
+    p.setup = function() {
+      let canvas = p.createCanvas(900, 500);
+      
+      // Year selector
+      yearSelect = p.createSelect();
+      yearSelect.position(50, 50);
+      for (let y = 2023; y <= 2025; y++) {
+        yearSelect.option(y);
+      }
+      yearSelect.changed(() => {
+        selectedYear = p.int(yearSelect.value());
       });
 
-      this._controlsSetup = true;
-    }
+      canvas.parent('viz-container-2'); // or whatever container you want
+    };
     
-    p.draw = function(p) {
+    p.draw = function() {
       const margin = { top: 90, right: 50, bottom: 80, left: 70 };
-      const chartWidth = 900 - margin.left - margin.right;
-      const chartHeight = 500 - margin.top - margin.bottom;
+      const chartWidth = p.width - margin.left - margin.right;
+      const chartHeight = p.height - margin.top - margin.bottom;
 
-      p.push();
       p.background(255);
       p.textFont("Arial");
       p.textAlign(p.CENTER, p.CENTER);
@@ -49,15 +45,13 @@
       p.textSize(20);
       p.text("GDP of Different Countries 2023–2025", margin.left + chartWidth/2, 30);
 
-      const selectedYear = this.selectedYear;
-      const data = this.data;
-
       const barCount = data.length;
       const xStep = chartWidth / barCount;
       const barWidth = xStep * 0.55;
 
       const maxValue = p.max(data.map(d => d["gdp_" + selectedYear]));
 
+      p.textSize(12);
       data.forEach((d, i) => {
         const x = margin.left + i * xStep + xStep * 0.2;
         const y = margin.top + chartHeight;
@@ -65,7 +59,7 @@
         const gdp = d["gdp_" + selectedYear];
         const barHeight = (gdp / maxValue) * chartHeight;
 
-        p.fill("#2ca02c"); // GREEN for GDP
+        p.fill("#2ca02c");
         p.rect(x, y - barHeight, barWidth, barHeight);
 
         p.fill(255);
@@ -78,19 +72,20 @@
       p.stroke(200);
       for (let i = 0; i <= 5; i++) {
         const yPos = margin.top + (chartHeight / 5) * i;
-        p.line(margin.left, yPos, 900 - margin.right, yPos);
+        p.line(margin.left, yPos, p.width - margin.right, yPos);
 
         p.noStroke();
         p.fill(0);
+        p.textAlign(p.RIGHT, p.CENTER);
         p.text(
           Math.round(maxValue * (1 - i / 5)).toLocaleString(),
-          margin.left - 35,
+          margin.left - 10,
           yPos
         );
         p.stroke(200);
       }
-      p.pop();
-      }
+    };
   };
+  
+  window.GDPGraph = GDPGraph;
 })();
-
