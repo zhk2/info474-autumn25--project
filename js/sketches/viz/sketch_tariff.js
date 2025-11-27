@@ -15,29 +15,27 @@
       { country: "NGA", imports_2023: 70, imports_2024: 78, imports_2025: 85, exports_2023: 45, exports_2024: 53, exports_2025: 60, tariff_added: "4%", tariff_year: 2025 },
       { country: "KOR", imports_2023: 125, imports_2024: 135, imports_2025: 145, exports_2023: 95, exports_2024: 103, exports_2025: 110, tariff_added: "10%", tariff_year: 2025 }
     ],
+    drawButtons: function(p) {
+      const years = ["2023", "2024", "2025"];
+      years.forEach((year, i) => {
+        let x = 60 + i * 80;
+        let y = 45;
+        let w = 60;
+        let h = 25;
 
-    // Setup year toggle buttons, robust version
-    setupControls: function(p) {
-      if (this._controlsSetup) return;
+        p.fill(this.selectedYear == year ? "#333" : "#DDD");
+        p.rect(x, y, w, h, 5);
 
-      // Attach container to canvas parent
-      const canvasParent = p.canvas.parentNode || document.body;
-      const container = p.createDiv();
-      container.parent(canvasParent);
-      container.style('display', 'flex');
-      container.style('gap', '10px');
-      container.style('margin-bottom', '10px');
+        p.fill(this.selectedYear == year ? "#FFF" : "#000");
+        p.textSize(12);
+        p.text(year, x + w/2, y + h/2);
 
-      ['2023', '2024', '2025'].forEach((year) => {
-        const btn = p.createButton(year);
-        btn.parent(container);
-        btn.mousePressed(() => {
+        if (p.mouseIsPressed &&
+            p.mouseX > x && p.mouseX < x+w &&
+            p.mouseY > y && p.mouseY < y+h) {
           this.selectedYear = year;
-          p.redraw();
-        });
+        }
       });
-
-      this._controlsSetup = true;
     },
 
      draw: function(p, manager) {
