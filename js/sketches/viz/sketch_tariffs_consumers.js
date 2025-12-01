@@ -215,7 +215,7 @@
       p.textStyle(p.BOLD);
       p.textAlign(p.LEFT, p.TOP);
       p.fill(26, 26, 26);
-      p.text("Consumer Goods & Tariffs", marginLeft, 30);
+      p.text("Consumer Goods & Tariffs (2015-2024)", marginLeft, 30);
 
       // Subtitle
       p.textFont('Inter');
