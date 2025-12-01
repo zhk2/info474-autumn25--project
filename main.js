@@ -6,3 +6,6 @@ new p5(GDPGraph)
 new p5(StackedTopTenGDPGraph)
 
 new p5(TariffGraph)
+
+// Consumer impact
+new p5(GDPComps)
