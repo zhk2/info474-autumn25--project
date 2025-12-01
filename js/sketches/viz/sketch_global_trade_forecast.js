@@ -1,35 +1,25 @@
-// sketch_global_trade_forecast.js
-// Story: "Where Are We Headed? Trade Volatility and Tariff Tension"
-// Static summary using grouped time periods:
-//   - Top panel: average year-to-year % change in total global trade per period
-//   - Bottom panel: average tariff "tension" = share of positive tariff_change_value per period
-
+// sketch_global_trade_forecast.js - IMPROVED VERSION
+// Trade forecast with editorial scatter plot styling
 (function () {
   window.sketch_global_trade_forecast = {
     _controlsSetup: false,
     table: null,
-
     years: [],
-    tradeVals: [],        // trillions USD
-    tradeChangePct: [],   // % change vs previous year
-    tariffIndexYear: [],  // per-year tension index (0–1)
+    tradeVals: [],
+    tariffShareByYear: {},
+    periodLabels: [],
+    periodTradeChange: [],
+    periodTariffTension: [],
+    statusMessage: "Loading global trade data…",
 
-    // Grouped period data
-    binDefs: [
+    periodBins: [
       { label: "2015–2017", start: 2015, end: 2017 },
       { label: "2018–2020", start: 2018, end: 2020 },
       { label: "2021–2024", start: 2021, end: 2024 }
     ],
-    binLabels: [],
-    binTradeChange: [],   // avg % change in each period
-    binTariffIndex: [],   // avg tariff tension in each period
-
-    maxTariffIndex: 1,
-    statusMessage: "Loading global trade data…",
 
     initData: function (p) {
       if (this.table) return;
-
       this.statusMessage = "Loading global trade data…";
 
       this.table = p.loadTable(
@@ -50,21 +40,19 @@
         return;
       }
 
-      const yearTrade = {};        // year -> global_total_trade
-      const tariffCounts = {};     // year -> how many rows had any tariff_change_value
-      const tariffPosCounts = {};  // year -> how many rows had tariff_change_value > 0
+      const yearTrade = {};
+      const tariffCounts = {};
+      const tariffPosCounts = {};
 
       for (let r = 0; r < this.table.getRowCount(); r++) {
         const year = parseInt(this.table.getString(r, "year"), 10);
         if (!year) continue;
 
-        // Global trade: keep a single aggregate row per year
         const gTrade = parseFloat(this.table.getString(r, "global_total_trade"));
         if (!isNaN(gTrade) && !yearTrade[year]) {
           yearTrade[year] = gTrade;
         }
 
-        // Tariff changes: build a per-year "tension" index
         const tStr = this.table.getString(r, "tariff_change_value");
         const tVal = parseFloat(tStr);
         if (!isNaN(tVal)) {
@@ -85,398 +73,296 @@
 
       this.years = [];
       this.tradeVals = [];
-      this.tradeChangePct = [];
-      this.tariffIndexYear = [];
+      this.tariffShareByYear = {};
 
-      // Fill trade values (trillions of USD)
       for (let y of sortedYears) {
         this.years.push(y);
         this.tradeVals.push(yearTrade[y] / 1e12);
+
+        const total = tariffCounts[y] || 0;
+        const pos = tariffPosCounts[y] || 0;
+        let share = 0;
+        if (total > 0) share = pos / total;
+        this.tariffShareByYear[y] = share;
       }
 
-      const n = this.years.length;
-      if (n === 0) {
+      if (!this.years.length) {
         this.statusMessage = "No global trade rows found in this dataset.";
         return;
       }
 
-      // Compute % change vs previous year
-      this.tradeChangePct = new Array(n).fill(null);
-      for (let i = 1; i < n; i++) {
+      const yearlyChange = {};
+      for (let i = 1; i < this.years.length; i++) {
+        const yPrev = this.years[i - 1];
+        const yCur = this.years[i];
         const prev = this.tradeVals[i - 1];
         const cur = this.tradeVals[i];
         if (prev > 0) {
-          this.tradeChangePct[i] = ((cur - prev) / prev) * 100;
+          yearlyChange[yCur] = ((cur - prev) / prev) * 100;
         }
       }
 
-      // Per-year tariff "tension" index: share of positive changes
-      this.tariffIndexYear = new Array(n).fill(0);
-      for (let i = 0; i < n; i++) {
-        const y = this.years[i];
-        const total = tariffCounts[y] || 0;
-        const pos = tariffPosCounts[y] || 0;
-        let idx = 0;
-        if (total > 0) {
-          idx = pos / total; // 0–1
-        }
-        this.tariffIndexYear[i] = idx;
-      }
+      this.periodLabels = [];
+      this.periodTradeChange = [];
+      this.periodTariffTension = [];
 
-      // ---- Group data into periods / bins ----
-      this.binLabels = [];
-      this.binTradeChange = [];
-      this.binTariffIndex = [];
+      for (const bin of this.periodBins) {
+        const { label, start, end } = bin;
 
-      let maxIdx = 0;
-
-      for (const bin of this.binDefs) {
-        const label = bin.label;
-        const start = bin.start;
-        const end = bin.end;
-
-        const tradeValsBin = [];
-        const tariffValsBin = [];
-
-        for (let i = 0; i < n; i++) {
-          const y = this.years[i];
-          if (y < start || y > end) continue;
-
-          const chg = this.tradeChangePct[i];
-          if (chg != null && !isNaN(chg)) {
-            tradeValsBin.push(chg);
-          }
-
-          const tIdx = this.tariffIndexYear[i];
-          if (!isNaN(tIdx)) {
-            tariffValsBin.push(tIdx);
+        const changes = [];
+        for (let y = start + 1; y <= end; y++) {
+          if (yearlyChange.hasOwnProperty(y)) {
+            changes.push(yearlyChange[y]);
           }
         }
-
-        // Average values per bin (if no data, fall back to 0)
         let avgChange = null;
-        if (tradeValsBin.length > 0) {
-          const sum = tradeValsBin.reduce((a, b) => a + b, 0);
-          avgChange = sum / tradeValsBin.length;
+        if (changes.length > 0) {
+          avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
         }
 
-        let avgTariff = 0;
-        if (tariffValsBin.length > 0) {
-          const sumT = tariffValsBin.reduce((a, b) => a + b, 0);
-          avgTariff = sumT / tariffValsBin.length;
+        let posSum = 0;
+        let totalSum = 0;
+        for (let y = start; y <= end; y++) {
+          const total = tariffCounts[y] || 0;
+          const pos = tariffPosCounts[y] || 0;
+          posSum += pos;
+          totalSum += total;
         }
+        let tension = 0;
+        if (totalSum > 0) tension = posSum / totalSum;
 
-        this.binLabels.push(label);
-        this.binTradeChange.push(avgChange);
-        this.binTariffIndex.push(avgTariff);
-
-        if (avgTariff > maxIdx) maxIdx = avgTariff;
+        this.periodLabels.push(label);
+        this.periodTradeChange.push(avgChange);
+        this.periodTariffTension.push(tension);
       }
-
-      this.maxTariffIndex = maxIdx > 0 ? maxIdx : 1;
     },
 
     setupControls: function (p) {
       if (this._controlsSetup) return;
       this._controlsSetup = true;
-      p.textFont("sans-serif");
+      p.textFont("Inter");
       this.initData(p);
     },
 
     draw: function (p) {
       if (!this._controlsSetup) this.setupControls(p);
 
-      p.background(250);
+      // Elegant gradient background
+      const gradSteps = 30;
+      p.noStroke();
+      for (let i = 0; i < gradSteps; i++) {
+        const inter = i / gradSteps;
+        const c = p.lerpColor(
+          p.color(250, 249, 246),
+          p.color(245, 242, 235),
+          inter
+        );
+        p.fill(c);
+        p.rect(0, (p.height / gradSteps) * i, p.width, p.height / gradSteps + 1);
+      }
 
-      if (!this.binLabels.length) {
-        p.fill(0);
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(14);
-        p.text(this.statusMessage || "Loading global trade data…", 20, 20);
+      if (!this.periodLabels.length) {
+        p.fill(102, 102, 102);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textFont('Inter');
+        p.textSize(16);
+        p.text(this.statusMessage || "Loading global trade data…", p.width/2, p.height/2);
         return;
       }
 
-      // Layout
-      const marginLeft = 80;
-      const marginRight = 210;
-      const headerTop = 26;
-      const headerGap = 40;
-      const marginTop = headerTop + headerGap;
-      const marginBottom = 80;
+      const n = this.periodLabels.length;
+      const labels = this.periodLabels;
+      const tradeChange = this.periodTradeChange;
+      const tariffIndex = this.periodTariffTension;
+
+      const marginLeft = 100;
+      const marginRight = 240;
+      const marginTop = 130;
+      const marginBottom = 90;
       const chartWidth = p.width - marginLeft - marginRight;
       const chartHeight = p.height - marginTop - marginBottom;
 
-      const topPanelHeight = chartHeight * 0.55;
-      const gapPanels = 18;
-      const bottomPanelHeight = chartHeight - topPanelHeight - gapPanels;
-
-      const topY = marginTop;
-      const bottomY = marginTop + topPanelHeight + gapPanels;
-
-      // ---------- Header ----------
-      p.noStroke();
-      p.fill(25);
+      // Title
+      p.textFont('Spectral');
+      p.textSize(32);
+      p.textStyle(p.BOLD);
       p.textAlign(p.LEFT, p.TOP);
-      p.textSize(18);
-      p.text("Trade Volatility and Tariff Tension", marginLeft, headerTop);
+      p.fill(26, 26, 26);
+      p.text("Trade Volatility & Tariff Tension", marginLeft, 30);
 
-      p.textSize(11);
-      p.fill(60);
-      p.text(
-        "Top: average year-to-year change in total global trade by period",
-        marginLeft,
-        headerTop + 22
-      );
-      p.text(
-        "Bottom: average tariff tension (share of positive tariff changes) by period",
-        marginLeft,
-        headerTop + 36
-      );
+      // Subtitle
+      p.textFont('Inter');
+      p.textSize(16);
+      p.textStyle(p.NORMAL);
+      p.fill(102, 102, 102);
+      p.text("Period-by-Period Analysis", marginLeft, 70);
 
-      const bins = this.binLabels;
-      const tradeBins = this.binTradeChange;
-      const tariffBins = this.binTariffIndex;
-      const B = bins.length;
+      // Description
+      p.textSize(13);
+      p.fill(153, 153, 153);
+      p.text("Each point represents a 3-4 year period", marginLeft, 95);
 
-      // Guard in case something odd happens
-      if (!B) return;
+      // Compute axis ranges
+      let xMin = Infinity, xMax = -Infinity;
+      let yMin = Infinity, yMax = -Infinity;
 
-      // X positions are based on bin index (0..B-1)
-      const step = chartWidth / B;
-      const barWidth = Math.max(18, step * 0.55);
-
-      // ---------- Top panel: trade % change (by period) ----------
-      let minChange = 0;
-      let maxChange = 0;
-      for (let i = 0; i < B; i++) {
-        const v = tradeBins[i];
-        if (v == null || isNaN(v)) continue;
-        if (v < minChange) minChange = v;
-        if (v > maxChange) maxChange = v;
-      }
-      if (minChange === maxChange) {
-        minChange -= 5;
-        maxChange += 5;
-      } else {
-        const pad = (maxChange - minChange) * 0.15;
-        minChange -= pad;
-        maxChange += pad;
+      for (let i = 0; i < n; i++) {
+        const x = tariffIndex[i];
+        const y = tradeChange[i];
+        if (x == null || isNaN(x) || y == null || isNaN(y)) continue;
+        if (x < xMin) xMin = x;
+        if (x > xMax) xMax = x;
+        if (y < yMin) yMin = y;
+        if (y > yMax) yMax = y;
       }
 
-      const topBaseline = p.map(
-        0,
-        minChange,
-        maxChange,
-        topY + topPanelHeight,
-        topY
-      );
+      if (!isFinite(xMin) || !isFinite(xMax)) {
+        xMin = 0; xMax = 1;
+      }
 
-      // Frame for top panel
+      xMin = 0.00;
+      xMax = 0.12;
+
+      if (!isFinite(yMin) || !isFinite(yMax)) {
+        yMin = -5; yMax = 15;
+      }
+
+      const yPad = (yMax - yMin) * 0.15 || 1.0;
+      yMin -= yPad;
+      yMax += yPad;
+
+      // Chart frame
       p.noFill();
-      p.stroke(0);
-      p.strokeWeight(1);
-      p.rect(marginLeft, topY, chartWidth, topPanelHeight);
+      p.stroke(229, 229, 229);
+      p.strokeWeight(2);
+      p.rect(marginLeft, marginTop, chartWidth, chartHeight);
 
-      // Horizontal grid & labels (top panel)
-      p.textSize(10);
+      // Grid & labels
+      p.textFont('Inter');
+      p.textSize(11);
+      p.fill(102, 102, 102);
+
+      // Y grid
       p.textAlign(p.RIGHT, p.CENTER);
-      const topTicks = 5;
-      for (let t = 0; t <= topTicks; t++) {
-        const v = p.map(t, 0, topTicks, minChange, maxChange);
-        const yPos = p.map(
-          v,
-          minChange,
-          maxChange,
-          topY + topPanelHeight,
-          topY
-        );
-        p.stroke(230);
+      const yTicks = 5;
+      for (let t = 0; t <= yTicks; t++) {
+        const v = p.map(t, 0, yTicks, yMin, yMax);
+        const yPos = p.map(v, yMin, yMax, marginTop + chartHeight, marginTop);
+        p.stroke(245, 245, 245);
+        p.strokeWeight(1);
         p.line(marginLeft, yPos, marginLeft + chartWidth, yPos);
         p.noStroke();
-        p.fill(80);
-        p.text(v.toFixed(1), marginLeft - 8, yPos);
+        p.text(v.toFixed(1) + "%", marginLeft - 10, yPos);
       }
 
-      // Label near top-left of panel
-      p.noStroke();
-      p.fill(0);
-      p.textSize(11);
-      p.textAlign(p.LEFT, p.TOP);
-      p.text("Global trade: average year-to-year change (%)", marginLeft + 4, topY + 4);
-
-      // Bars for trade change (by period)
-      p.stroke(0);
-      p.strokeWeight(0.7);
-      for (let i = 0; i < B; i++) {
-        const pct = tradeBins[i];
-        if (pct == null || isNaN(pct)) continue;
-
-        const xCenter = marginLeft + step * (i + 0.5);
-        const yZero = topBaseline;
-        const yVal = p.map(
-          pct,
-          minChange,
-          maxChange,
-          topY + topPanelHeight,
-          topY
-        );
-
-        const x0 = xCenter - barWidth / 2;
-        const x1 = xCenter + barWidth / 2;
-
-        if (pct >= 0) {
-          p.fill(33, 114, 179); // blue for positive growth
-          p.rect(x0, yVal, x1 - x0, yZero - yVal);
-        } else {
-          p.fill(200, 90, 90); // muted red for contraction
-          p.rect(x0, yZero, x1 - x0, yVal - yZero);
-        }
-      }
-
-      // Draw the 0% baseline
-      p.stroke(100);
-      p.strokeWeight(1);
-      p.line(marginLeft, topBaseline, marginLeft + chartWidth, topBaseline);
-
-      // ---------- Bottom panel: tariff tension (by period) ----------
-      // Frame
-      p.noFill();
-      p.stroke(0);
-      p.strokeWeight(1);
-      p.rect(marginLeft, bottomY, chartWidth, bottomPanelHeight);
-
-      // Horizontal grid & labels for tariff index (0 to maxTariffIndex)
-      const tariffMax = this.maxTariffIndex > 0 ? this.maxTariffIndex : 1;
-      p.textSize(10);
-      p.textAlign(p.RIGHT, p.CENTER);
-      const tariffTicks = 4;
-      for (let t = 0; t <= tariffTicks; t++) {
-        const v = (tariffMax * t) / tariffTicks;
-        const frac = v / tariffMax;
-        const yPos = bottomY + bottomPanelHeight - frac * bottomPanelHeight;
-        p.stroke(230);
-        p.line(marginLeft, yPos, marginLeft + chartWidth, yPos);
-        p.noStroke();
-        p.fill(80);
-        p.text(v.toFixed(2), marginLeft - 8, yPos);
-      }
-
-      // Label near top-left of bottom panel
-      p.noStroke();
-      p.fill(0);
-      p.textSize(11);
-      p.textAlign(p.LEFT, p.TOP);
-      p.text(
-        "Tariff tension: average share of positive tariff changes",
-        marginLeft + 4,
-        bottomY + 4
-      );
-
-      // Bars for tariff tension (by period)
-      p.stroke(0);
-      p.strokeWeight(0.7);
-      for (let i = 0; i < B; i++) {
-        const idx = tariffBins[i] || 0;
-        const xCenter = marginLeft + step * (i + 0.5);
-
-        const frac = idx / tariffMax;
-        const h = frac * bottomPanelHeight;
-
-        const x0 = xCenter - barWidth / 2;
-        const x1 = xCenter + barWidth / 2;
-        const y1 = bottomY + bottomPanelHeight;
-        const y0 = y1 - h;
-
-        p.fill(245, 122, 0); // orange for tariff tension
-        p.rect(x0, y0, x1 - x0, h);
-      }
-
-      // ---------- Shared X axis (period labels) ----------
-      p.stroke(210);
-      p.fill(80);
+      // X grid
       p.textAlign(p.CENTER, p.TOP);
-      for (let i = 0; i < B; i++) {
-        const label = bins[i];
-        const xCenter = marginLeft + step * (i + 0.5);
-        const axisY = bottomY + bottomPanelHeight;
-        p.line(xCenter, axisY, xCenter, axisY + 4);
+      const xTicks = 4;
+      const axisY = marginTop + chartHeight;
+      for (let t = 0; t <= xTicks; t++) {
+        const frac = p.map(t, 0, xTicks, xMin, xMax);
+        const xPos = p.map(frac, xMin, xMax, marginLeft, marginLeft + chartWidth);
+        p.stroke(245, 245, 245);
+        p.line(xPos, marginTop, xPos, marginTop + chartHeight);
         p.noStroke();
-        p.text(label, xCenter, axisY + 6);
-        p.stroke(210);
+        p.text((frac * 100).toFixed(0) + "%", xPos, axisY + 8);
       }
 
-      // X axis label
-      p.noStroke();
-      p.fill(0);
+      // Axis labels
       p.textSize(12);
+      p.textAlign(p.CENTER, p.TOP);
+      p.fill(217, 119, 6);
+      p.textStyle(p.BOLD);
+      p.text("Tariff Tension →", marginLeft + chartWidth / 2, p.height - marginBottom + 45);
+
+      p.push();
+      p.translate(45, marginTop + chartHeight / 2);
+      p.rotate(-p.HALF_PI);
       p.textAlign(p.CENTER, p.CENTER);
-      p.text(
-        "Period",
-        marginLeft + chartWidth / 2,
-        p.height - marginBottom + 28
-      );
+      p.fill(37, 99, 168);
+      p.text("← Trade Volatility", 0, 0);
+      p.pop();
 
-      // ---------- Legend ----------
-      drawLegend(
-        p,
-        marginLeft + chartWidth + 10,
-        marginTop + 10
-      );
+      // Scatter points with labels
+      p.textAlign(p.LEFT, p.CENTER);
+      p.textFont('Inter');
+      p.textSize(12);
+      p.textStyle(p.NORMAL);
 
-      // ---------- Method note ----------
-      p.noStroke();
-      p.fill(70);
-      p.textSize(10);
-      p.textAlign(p.LEFT, p.TOP);
-      const footer =
-        "Blue bars: average year-to-year % change in total global trade within each period. " +
-        "Orange bars: average share of rows with tariff_change_value > 0 within each period.";
-      p.text(footer, marginLeft, bottomY + bottomPanelHeight + 26, chartWidth, 40);
+      for (let i = 0; i < n; i++) {
+        const xVal = tariffIndex[i];
+        const yVal = tradeChange[i];
+        if (xVal == null || isNaN(xVal) || yVal == null || isNaN(yVal)) continue;
 
-      // Helper: legend on the right
-      function drawLegend(p, x, y) {
-        const padding = 10;
-        const boxW = 200;
-        const boxH = 72;
-        const sw = 24;
+        const xPos = p.map(xVal, xMin, xMax, marginLeft, marginLeft + chartWidth);
+        const yPos = p.map(yVal, yMin, yMax, marginTop + chartHeight, marginTop);
 
-        p.fill(248);
-        p.stroke(200);
-        p.rect(x, y, boxW, boxH, 6);
-
+        // Shadow
         p.noStroke();
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(11);
-        p.fill(0);
-        p.text("How to read this view", x + padding, y + 6);
+        p.fill(0, 0, 0, 30);
+        p.circle(xPos + 2, yPos + 2, 16);
 
-        let cy = y + 24;
-        // Trade volatility
-        p.stroke(0);
-        p.fill(33, 114, 179);
-        p.rect(x + padding, cy + 4, sw, 10);
-        p.noStroke();
-        p.fill(50);
-        p.textSize(10);
-        p.text(
-          "Blue bars (top): global trade volatility by period",
-          x + padding + sw + 8,
-          cy
-        );
+        // Point
+        p.stroke(217, 119, 6);
+        p.strokeWeight(2);
+        p.fill(37, 99, 168);
+        p.circle(xPos, yPos, 16);
 
-        // Tariff tension
-        cy += 20;
-        p.stroke(0);
-        p.fill(245, 122, 0);
-        p.rect(x + padding, cy + 4, sw, 10);
+        // Label with background
         p.noStroke();
-        p.fill(50);
-        p.text(
-          "Orange bars (bottom): tariff tension by period",
-          x + padding + sw + 8,
-          cy
-        );
+        const label = labels[i];
+        const textW = p.textWidth(label);
+        
+        p.fill(255, 255, 255, 240);
+        p.rect(xPos + 12, yPos - 10, textW + 12, 20, 4);
+        
+        p.fill(26, 26, 26);
+        p.textStyle(p.BOLD);
+        p.text(label, xPos + 18, yPos);
       }
+
+      // Legend
+      const legX = marginLeft + chartWidth + 20;
+      const legY = marginTop;
+      
+      p.fill(255, 255, 255, 250);
+      p.stroke(229, 229, 229);
+      p.strokeWeight(1);
+      p.rect(legX, legY, 200, 150, 6);
+      
+      p.noStroke();
+      p.textAlign(p.LEFT, p.TOP);
+      p.textFont('Inter');
+      p.textSize(13);
+      p.textStyle(p.BOLD);
+      p.fill(26, 26, 26);
+      p.text("How to Read", legX + 12, legY + 12);
+      
+      p.textStyle(p.NORMAL);
+      p.textSize(11);
+      p.fill(102, 102, 102);
+      
+      let cy = legY + 40;
+      
+      // Point sample
+      p.stroke(217, 119, 6);
+      p.strokeWeight(2);
+      p.fill(37, 99, 168);
+      p.circle(legX + 20, cy, 12);
+      p.noStroke();
+      p.fill(26, 26, 26);
+      p.text("Each period (3-4 years)", legX + 32, cy - 6);
+      
+      cy += 30;
+      p.fill(102, 102, 102);
+      p.text("→ Right: More tariff hikes", legX + 12, cy);
+      cy += 20;
+      p.text("↑ Up: Higher trade swings", legX + 12, cy);
+      cy += 30;
+      p.textSize(10);
+      p.fill(153, 153, 153);
+      const note = "Higher volatility often\ncorrelates with trade\ntension periods";
+      p.text(note, legX + 12, cy);
     }
   };
 })();

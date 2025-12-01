@@ -1,8 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Scrolling Sections</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Trade War: Understanding US Tariffs and Global Impact</title>
+  <meta name="description" content="An interactive data visualization exploring US tariffs, their impact on global trade, GDP, and consumers from 2015-2024" />
+  <meta name="author" content="Trade Economics Research" />
+  <meta name="keywords" content="tariffs, trade war, US tariffs, global trade, GDP, economics, data visualization" />
+
+  <meta property="og:title" content="The Trade War: Understanding US Tariffs and Global Impact" />
+  <meta property="og:description" content="An interactive data visualization exploring US tariffs, their impact on global trade, GDP, and consumers" />
+  <meta property="og:type" content="article" />
+  
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
@@ -13,61 +23,69 @@
       <div id='sections'>
         <section class="step" data-active-index="0">
           <div class="title">The Trade War</div>
-          Learn about the US Tariffs on different parts of the world.<br /><br />
-         <!-- Your mission is to create an interactive article using P5.js</b>. -->
+          Explore how US tariffs have reshaped global trade patterns, impacted national economies, and affected consumers from 2015 to 2024. This interactive article uses comprehensive trade data to tell the story of modern economic protectionism.
         </section>
+        
         <section class="step" data-active-index="1">
           <div class="title">Overview</div>
+          <p>This data-driven exploration covers:</p>
           <ul>
-          <li>Introduction to Tariffs</li>
-          <li>Tariff Percentages by Country</li>
-          <li>GDP by Country</li>
-          <li>Gunner's vis 1</li>
-          <li>Gunner's vis 2</li>
+            <li>Introduction to Tariffs</li>
+            <li>Tariff Percentages by Country</li>
+            <li>GDP Impact Analysis</li>
+            <li>Consumer Goods Exposure</li>
+            <li>Global Trade Forecast</li>
           </ul>
-
         </section>
+        
         <section class="step" data-active-index="2">
-          <div class="title">Introduction to Tariffs</div>
-          A Tariff is a tax that is implemented from one country to another country on its good and services. 
-         <!-- Tariffs can have multiple purposes such as protecting domestic businesses, raising revenue, and reducing deficits. -->
-   
+          <div class="title">Understanding Tariffs</div>
+          <p>A tariff is a tax imposed by one country on goods and services imported from another country. Tariffs serve multiple strategic purposes: protecting domestic industries from foreign competition, generating government revenue, and addressing trade imbalances.</p>
+          <p>The US trade policy from 2018-2024 marked a significant shift toward protectionism, with tariffs imposed on hundreds of billions of dollars worth of goods.</p>
         </section>
+        
         <section class="step" data-active-index="3">
-          <div class="title">Section 3</div>
-          Text
+          <div class="title">Tariffs by Country</div>
+          <p>Different countries face vastly different tariff rates from the United States. Select a country on the right to see how import-export dynamics and tariff rates have evolved over time.</p>
+          <p>The visualization shows three key metrics: import values (blue), export values (orange), and tariff rates (red bars). Notice how tariff changes often correlate with shifts in trade volume.</p>
         </section>
+        
         <section class="step" data-active-index="4">
-          <div class="title">Tariffs </div>
-          These are some of the countries that have a tariff implemented by the US in 2025. This explores
-          how tariffs can impact a country's trade.
+          <div class="title">Trade & Tariff Trends</div>
+          <p>These visualizations reveal the complex relationship between tariff policy and trade flows. Countries with higher tariffs often experience reduced import volumes, though the relationship isn't always straightforward.</p>
+          <p>Export patterns also shift as countries seek alternative markets or adjust production to avoid tariffs.</p>
         </section>
+        
         <section class="step" data-active-index="5">
-          <div class="title">GDP</div>
-          This is the GDP in USD of the countries that have a tariff implemented by the US in 2025. This explores
-          how tariff's can impact a country's GDP.
+          <div class="title">GDP Impact</div>
+          <p>Tariffs don't just affect trade—they impact entire economies. Select a country to compare GDP figures from 2022 (pre-major tariff increases) versus 2024 (post-implementation).</p>
+          <p>While correlation isn't causation, the data shows interesting patterns between tariff exposure and economic growth trajectories.</p>
         </section>
-        <div id="extra-space">
-        </div>
+        
+        <div id="extra-space"></div>
+        
         <section class="step" data-active-index="6">
-          <div class="title">How it affects consumers?</div>
-          Each line shows how dependent US consumers are on imported goods in a major category, like electronics, chemicals, manufactures, and mineral fuels. Values are normalized so you can compare categories on the same scale. The shaded vertical bands mark years when average US tariffs increased, making it easier to see which types of goods became more exposed during tariff hikes.
+          <div class="title">Consumer Impact</div>
+          <p>Each line represents a major import category—electronics, chemicals, manufactured goods, and mineral fuels. The normalized values show relative dependence on imports.</p>
+          <p>Shaded vertical bands mark years with significant tariff increases. Notice how some categories show more sensitivity to tariff policy than others. Electronics and chemicals, representing high-value consumer and industrial goods, demonstrate particularly interesting patterns.</p>
         </section>
+        
         <section class="step" data-active-index="7">
-          <div class="title">Where are we headed?</div>
-          From 2015 to 2024, global trade in goods grew by roughly forty percent, even with some sharp ups and downs. The solid line in the chart shows those observed values. The shaded region and dashed line simply extend the recent 2019–2024 trend out to 2030 to give a sense of what might happen if conditions stayed similar, but this is only an illustrative straight-line projection, not a full economic forecast.
+          <div class="title">The Future of Trade</div>
+          <p>This scatter plot summarizes three distinct periods: pre-trade war (2015-2017), peak trade tensions (2018-2020), and the recent period (2021-2024).</p>
+          <p>Each point shows the relationship between tariff tension (measured by the share of positive tariff changes) and trade volatility (year-over-year percentage changes in global trade).</p>
+          <p>The pattern suggests that higher tariff tension correlates with increased trade volatility—but the future remains uncertain.</p>
         </section>
       </div>
-      <div id='vis' class='vis-hidden'>
-      </div>
-      <div id="extra-space">
-      </div>
+      
+      <div id='vis' class='vis-hidden'></div>
+      <div id="extra-space"></div>
     </div>
   </div>
 
-
   <!-- p5.js (using CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+  
   <!-- helpers (data/loading, scroller, visual controller) -->
   <script src="js/helpers/data_loader.js"></script>
   <script src="js/helpers/scroller.js"></script>
