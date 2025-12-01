@@ -154,7 +154,7 @@
       const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
       p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
-      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 320);
+      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 300);
       p.fill(0);
       p.text("Before Tariff (2022)", xBefore, p.height - 40);
 
