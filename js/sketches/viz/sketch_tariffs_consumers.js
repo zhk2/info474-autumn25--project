@@ -202,10 +202,10 @@
         return;
       }
 
-      const marginLeft = 100;
-      const marginRight = 240;
-      const marginTop = 130;
-      const marginBottom = 80;
+      const marginLeft = 120;
+      const marginRight = 260;
+      const marginTop = 150;
+      const marginBottom = 100;
       const chartWidth = p.width - marginLeft - marginRight;
       const chartHeight = p.height - marginTop - marginBottom;
 
@@ -362,7 +362,7 @@
 
       // Legend
       const legX = marginLeft + chartWidth + 20;
-      const legY = marginTop;
+      const legY = marginTop + 40;
       
       p.fill(255, 255, 255, 250);
       p.stroke(229, 229, 229);
