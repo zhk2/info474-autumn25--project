@@ -41,16 +41,16 @@
         if (!this.dataMap[country]) this.dataMap[country] = {};
         if (!this.dataMap[country][year]) {
           this.dataMap[country][year] = {
-            import_value: 0,
-            export_value: 0,
+            total_imports_country: Number(row.get("total_imports_country")) || 0,
+            total_exports_country: Number(row.get("total_exports_country")) || 0,
             tariff_prev_year: Number(row.get("tariff_prev_year")) || 0,
             tariff_change_value: Number(row.get("tariff_change_value")) || 0,
             tariff_change_direction: row.get("tariff_change_direction") || "unknown",
           };
+        } else {
+          this.dataMap[country][year].total_imports_country += Number(row.get("total_imports_country")) || 0;
+          this.dataMap[country][year].total_exports_country += Number(row.get("total_exports_country")) || 0;
         }
-
-        this.dataMap[country][year].import_value += Number(row.get("import_value")) || 0;
-        this.dataMap[country][year].export_value += Number(row.get("export_value")) || 0;
 
         if (!this.countries.includes(country)) this.countries.push(country);
       }
@@ -62,20 +62,17 @@
     setupControls(p) {
       if (this._controlsSetup || !this._dataLoaded) return;
 
-      // Section container
       this.sectionEl = document.querySelector('section[data-active-index="4"]');
       if (!this.sectionEl) {
         console.error("❌ Section 4 not found");
         return;
       }
       this.sectionEl.style.position = "relative";
-      this.sectionEl.style.minHeight = "600px"; // enough space for canvas
+      this.sectionEl.style.minHeight = "600px";
 
-      // Canvas inside section
       this.canvas = p.createCanvas(900, 500);
       this.canvas.parent(this.sectionEl);
 
-      // Dropdown inside section
       this.dropdown = p.createSelect();
       this.dropdown.parent(this.sectionEl);
       this.dropdown.option("-- Select a Country --");
@@ -88,7 +85,6 @@
     draw(p) {
       if (!this._controlsSetup || !this._dataLoaded) return;
 
-      // Show dropdown only if section is visible
       const sectionVisible = this.sectionEl.getBoundingClientRect().top < window.innerHeight &&
                              this.sectionEl.getBoundingClientRect().bottom > 0;
       if (sectionVisible) this.dropdown.show();
@@ -109,18 +105,18 @@
         return;
       }
 
-      let before = this.dataMap[country]?.[2022] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
-      let after = this.dataMap[country]?.[2024] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
+      let before = this.dataMap[country]?.[2022] || { total_imports_country: 0, total_exports_country: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
+      let after = this.dataMap[country]?.[2024] || { total_imports_country: 0, total_exports_country: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
 
-      before.import_value = Number(before.import_value) || 0;
-      before.export_value = Number(before.export_value) || 0;
+      before.total_imports_country = Number(before.total_imports_country) || 0;
+      before.total_exports_country = Number(before.total_exports_country) || 0;
       before.tariff_prev_year = Number(before.tariff_prev_year) || 0;
 
-      after.import_value = Number(after.import_value) || 0;
-      after.export_value = Number(after.export_value) || 0;
+      after.total_imports_country = Number(after.total_imports_country) || 0;
+      after.total_exports_country = Number(after.total_exports_country) || 0;
       after.tariff_prev_year = Number(after.tariff_prev_year) || 0;
 
-      if (before.import_value + before.export_value === 0 && after.import_value + after.export_value === 0) {
+      if (before.total_imports_country + before.total_exports_country === 0 && after.total_imports_country + after.total_exports_country === 0) {
         p.text("No trade data available for this country", p.width / 2, p.height / 2);
         return;
       }
@@ -131,7 +127,6 @@
       // --- Legend ---
       const legendX = 50;
       const legendY = 60;
-      const legendSpacing = 20;
 
       p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
       p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("Imports", legendX + 20, legendY + 7.5);
@@ -146,25 +141,23 @@
       p.fill(0); p.text("Tariff ↓", legendX + 340, legendY + 7.5);
 
       // --- Bars ---
-      let maxVal = Math.max(before.import_value + before.export_value, after.import_value + after.export_value);
+      let maxVal = Math.max(before.total_imports_country + before.total_exports_country, after.total_imports_country + after.total_exports_country);
       let barWidth = 50;
       let gap = 10;
-
-      // Store bar positions for hover
       let bars = [];
 
       // BEFORE 2022
       let xBefore = p.width / 3;
-      let hImpBefore = p.map(before.import_value, 0, maxVal, 0, 250);
-      let hExpBefore = p.map(before.export_value, 0, maxVal, 0, 250);
+      let hImpBefore = p.map(before.total_imports_country, 0, maxVal, 0, 250);
+      let hExpBefore = p.map(before.total_exports_country, 0, maxVal, 0, 250);
 
       p.fill("#113EA7");
       p.rect(xBefore - barWidth - gap/2, p.height - 80 - hImpBefore, barWidth, hImpBefore);
-      bars.push({ x: xBefore - barWidth - gap/2, y: p.height - 80 - hImpBefore, w: barWidth, h: hImpBefore, label: `Imports: ${before.import_value}` });
+      bars.push({ x: xBefore - barWidth - gap/2, y: p.height - 80 - hImpBefore, w: barWidth, h: hImpBefore, label: `Imports: ${before.total_imports_country}` });
 
       p.fill("#F57A00");
       p.rect(xBefore + gap/2, p.height - 80 - hExpBefore, barWidth, hExpBefore);
-      bars.push({ x: xBefore + gap/2, y: p.height - 80 - hExpBefore, w: barWidth, h: hExpBefore, label: `Exports: ${before.export_value}` });
+      bars.push({ x: xBefore + gap/2, y: p.height - 80 - hExpBefore, w: barWidth, h: hExpBefore, label: `Exports: ${before.total_exports_country}` });
 
       p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
@@ -174,16 +167,16 @@
 
       // AFTER 2024
       let xAfter = (2 * p.width) / 3;
-      let hImpAfter = p.map(after.import_value, 0, maxVal, 0, 250);
-      let hExpAfter = p.map(after.export_value, 0, maxVal, 0, 250);
+      let hImpAfter = p.map(after.total_imports_country, 0, maxVal, 0, 250);
+      let hExpAfter = p.map(after.total_exports_country, 0, maxVal, 0, 250);
 
       p.fill("#113EA7");
       p.rect(xAfter - barWidth - gap/2, p.height - 80 - hImpAfter, barWidth, hImpAfter);
-      bars.push({ x: xAfter - barWidth - gap/2, y: p.height - 80 - hImpAfter, w: barWidth, h: hImpAfter, label: `Imports: ${after.import_value}` });
+      bars.push({ x: xAfter - barWidth - gap/2, y: p.height - 80 - hImpAfter, w: barWidth, h: hImpAfter, label: `Imports: ${after.total_imports_country}` });
 
       p.fill("#F57A00");
       p.rect(xAfter + gap/2, p.height - 80 - hExpAfter, barWidth, hExpAfter);
-      bars.push({ x: xAfter + gap/2, y: p.height - 80 - hExpAfter, w: barWidth, h: hExpAfter, label: `Exports: ${after.export_value}` });
+      bars.push({ x: xAfter + gap/2, y: p.height - 80 - hExpAfter, w: barWidth, h: hExpAfter, label: `Exports: ${after.total_exports_country}` });
 
       p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
       p.text(`Tariff: ${after.tariff_prev_year}%`, xAfter, p.height - 320);
@@ -206,6 +199,7 @@
     },
   };
 })();
+
 
 
 

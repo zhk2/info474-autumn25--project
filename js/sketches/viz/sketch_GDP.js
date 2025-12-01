@@ -1,264 +1,188 @@
-// sketch_GDP.js - IMPROVED VERSION
-// GDP comparison with editorial styling
 (function () {
   window.sketch_gdp = {
-    _controlsSetup: false,
     table: null,
-    dataMap: {},
-    countries: [],
     dropdown: null,
-    selectedCountry: null,
-    statusMessage: "Loading GDP data…",
+    countries: [],
+    dataMap: {},
+    canvas: null,
+    _controlsSetup: false,
+    _dataLoaded: false,
+    sectionEl: null, // container section
 
-    initData: function (p) {
-      if (this.table) return;
-      this.statusMessage = "Loading GDP data…";
-      this.table = p.loadTable(
+    initData(p) {
+      p.loadTable(
         "data/datasets/Improved_Dataset/trade_master_full.csv",
         "csv",
         "header",
-        () => {
-          this.processData();
-          this.populateDropdown();
-          this.statusMessage = "";
+        (table) => {
+          this.table = table;
+          console.log("✅ CSV loaded:", table.getRowCount(), "rows");
+          this.processData(table);
+          this._dataLoaded = true;
+
+          if (!this._controlsSetup) this.setupControls(p);
+          p.redraw();
         },
-        () => {
-          this.statusMessage = "Failed to load GDP data.";
-        }
+        () => console.error("❌ Failed to load CSV")
       );
     },
 
-    processData: function () {
-      if (!this.table || typeof this.table.getRowCount !== "function") {
-        this.statusMessage = "Failed to load GDP data.";
-        return;
-      }
-
+    processData(table) {
       this.dataMap = {};
       this.countries = [];
 
-      for (let r = 0; r < this.table.getRowCount(); r++) {
-        const row = this.table.getRow(r);
-        const country = row.getString("country_name");
-        const year = row.getNum("year");
-        if (year !== 2022 && year !== 2024) continue;
-        if (!country) continue;
+      for (let r = 0; r < table.getRowCount(); r++) {
+        let row = table.getRow(r);
+        let country = row.getString("country_name");
+        let year = Number(row.get("year"));
+
+        if (isNaN(year) || (year !== 2022 && year !== 2024)) continue;
 
         if (!this.dataMap[country]) this.dataMap[country] = {};
-        this.dataMap[country][year] = {
-          gdp: row.getNum("gdp_usd"),
-          tariff_prev: row.getNum("tariff_prev_year"),
-          direction: row.getString("tariff_change_direction")
-        };
-        if (this.countries.indexOf(country) === -1) this.countries.push(country);
+        if (!this.dataMap[country][year]) {
+          this.dataMap[country][year] = {
+            gdp_usd: Number(row.get("gdp_usd")) || 0,
+            tariff_prev_year: Number(row.get("tariff_prev_year")) || 0,
+            tariff_change_value: Number(row.get("tariff_change_value")) || 0,
+            tariff_change_direction: row.get("tariff_change_direction") || "unknown",
+          };
+        } else {
+          this.dataMap[country][year].gdp_usd += Number(row.get("gdp_usd")) || 0;
+        }
+
+        if (!this.countries.includes(country)) this.countries.push(country);
       }
 
       this.countries.sort();
-      if (!this.selectedCountry && this.countries.length) {
-        this.selectedCountry = this.countries[0];
+      console.log("🌍 Countries after aggregation:", this.countries);
+    },
+
+    setupControls(p) {
+      if (this._controlsSetup || !this._dataLoaded) return;
+
+      // Section container
+      this.sectionEl = document.querySelector('section[data-active-index="4"]');
+      if (!this.sectionEl) {
+        console.error("❌ Section 4 not found");
+        return;
       }
-    },
+      this.sectionEl.style.position = "relative";
+      this.sectionEl.style.minHeight = "600px"; // enough space for canvas
 
-    populateDropdown: function () {
-      if (!this.dropdown) return;
-      this.dropdown.elt.innerHTML = "";
-      this.dropdown.option("— Select a Country —");
-      for (const c of this.countries) this.dropdown.option(c);
-      if (this.selectedCountry) this.dropdown.value(this.selectedCountry);
-    },
+      // Canvas inside section
+      this.canvas = p.createCanvas(900, 500);
+      this.canvas.parent(this.sectionEl);
 
-    setupControls: function (p) {
-      if (this._controlsSetup) return;
+      // Dropdown inside section
+      this.dropdown = p.createSelect();
+      this.dropdown.parent(this.sectionEl);
+      this.dropdown.option("-- Select a Country --");
+      this.countries.forEach((c) => this.dropdown.option(c));
+      this.dropdown.changed(() => p.redraw());
+
       this._controlsSetup = true;
-      p.textFont("Inter");
-      this.initData(p);
-
-      const container = document.getElementById("vis");
-      if (container && !this.dropdown) {
-        this.dropdown = p.createSelect();
-        this.dropdown.parent(container);
-        this.dropdown.class('form-select');
-        this.dropdown.style("width", "240px");
-        this.dropdown.style("margin", "20px");
-        this.dropdown.option("— Select a Country —");
-        this.dropdown.changed(() => {
-          const val = this.dropdown.value();
-          this.selectedCountry = val === "— Select a Country —" ? null : val;
-        });
-      }
     },
 
-    draw: function (p) {
-      if (!this._controlsSetup) this.setupControls(p);
+    draw(p) {
+      if (!this._controlsSetup || !this._dataLoaded) return;
 
-      // Elegant background gradient
-      const gradSteps = 30;
-      p.noStroke();
-      for (let i = 0; i < gradSteps; i++) {
-        const inter = i / gradSteps;
-        const c = p.lerpColor(
-          p.color(250, 249, 246),
-          p.color(245, 242, 235),
-          inter
-        );
-        p.fill(c);
-        p.rect(0, (p.height / gradSteps) * i, p.width, p.height / gradSteps + 1);
-      }
+      // Show dropdown only if section is visible
+      const sectionVisible = this.sectionEl.getBoundingClientRect().top < window.innerHeight &&
+                             this.sectionEl.getBoundingClientRect().bottom > 0;
+      if (sectionVisible) this.dropdown.show();
+      else this.dropdown.hide();
 
-      p.textFont('Inter');
-      p.textSize(15);
-      p.fill(102, 102, 102);
-
-      if (!this.countries.length) {
-        p.text(this.statusMessage || "Loading GDP data…", 30, 80);
-        return;
-      }
-
-      const country = this.selectedCountry;
-      if (!country || !this.dataMap[country]) {
-        p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(18);
-        p.text("← Select a country to view GDP comparison", p.width/2, p.height/2);
-        return;
-      }
-
-      const before = this.dataMap[country][2022];
-      const after = this.dataMap[country][2024];
-      if (!before || !after) {
-        p.text("GDP data for 2022 and 2024 is incomplete.", 30, 80);
-        return;
-      }
-
-      const margin = { left: 100, right: 60, top: 100, bottom: 90 };
-      const chartW = p.width - margin.left - margin.right;
-      const chartH = p.height - margin.top - margin.bottom;
-
-      // Title
-      p.textAlign(p.LEFT, p.TOP);
-      p.textFont('Spectral');
-      p.textSize(32);
-      p.textStyle(p.BOLD);
-      p.fill(26, 26, 26);
-      p.text("GDP Impact Analysis", margin.left, 30);
-      
-      // Subtitle
-      p.textFont('Inter');
-      p.textSize(16);
-      p.fill(102, 102, 102);
-      p.text(country + " · 2022 vs 2024", margin.left, 70);
-
-      const maxGDP = Math.max(before.gdp, after.gdp) || 1;
-      const barWidth = 140;
-
-      const x1 = margin.left + chartW * 0.35;
-      const x2 = margin.left + chartW * 0.65;
-      const baseY = margin.top + chartH;
-
-      // Grid lines and labels
-      p.stroke(240, 240, 240);
-      p.strokeWeight(1);
-      p.textAlign(p.RIGHT, p.CENTER);
-      p.textFont('Inter');
-      p.textSize(12);
-      p.fill(153, 153, 153);
-      
-      for (let i = 0; i <= 5; i++) {
-        const v = (maxGDP / 5) * i;
-        const y = p.map(v, 0, maxGDP, baseY, margin.top);
-        p.line(margin.left, y, margin.left + chartW, y);
-        p.noStroke();
-        const label = v >= 1e9 ? (v/1e9).toFixed(1) + "B" : (v/1e6).toFixed(0) + "M";
-        p.text(label, margin.left - 12, y);
-        p.stroke(240, 240, 240);
-      }
-      p.noStroke();
-
-      // Y-axis label
-      p.push();
-      p.translate(40, margin.top + chartH/2);
-      p.rotate(-p.HALF_PI);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.fill(102, 102, 102);
-      p.textSize(13);
-      p.text("GDP (USD)", 0, 0);
-      p.pop();
-
-      // 2022 bar
-      const h1 = p.map(before.gdp, 0, maxGDP, 0, chartH);
-      
-      // Bar shadow
-      p.fill(0, 0, 0, 20);
-      p.rect(x1 - barWidth / 2 + 3, baseY - h1 + 3, barWidth, h1, 4);
-      
-      // Main bar
-      p.fill(37, 99, 168);
-      p.rect(x1 - barWidth / 2, baseY - h1, barWidth, h1, 4);
-      
-      // Value on bar
-      p.fill(255);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.textSize(16);
-      p.textStyle(p.BOLD);
-      const val1 = before.gdp >= 1e9 ? (before.gdp/1e9).toFixed(2) + "B" : (before.gdp/1e6).toFixed(0) + "M";
-      p.text("$" + val1, x1, baseY - h1 + 30);
-
-      // Year label
-      p.fill(26, 26, 26);
-      p.textStyle(p.NORMAL);
+      p.background(255);
+      p.fill(0);
       p.textSize(18);
-      p.text("2022", x1, baseY + 30);
 
-      // Tariff badge
-      const tariffColor = before.direction === "increase" ? p.color(220, 38, 38) : p.color(5, 150, 105);
-      p.fill(tariffColor);
-      p.rect(x1 - 45, baseY - h1 - 40, 90, 26, 13);
-      p.fill(255);
-      p.textSize(13);
-      p.text(before.tariff_prev + "% tariff", x1, baseY - h1 - 27);
+      if (!this.dropdown || !this.countries.length) {
+        p.text("Loading trade data...", 20, 40);
+        return;
+      }
 
-      // 2024 bar
-      const h2 = p.map(after.gdp, 0, maxGDP, 0, chartH);
-      
-      // Bar shadow
-      p.fill(0, 0, 0, 20);
-      p.rect(x2 - barWidth / 2 + 3, baseY - h2 + 3, barWidth, h2, 4);
-      
-      // Main bar
-      p.fill(217, 119, 6);
-      p.rect(x2 - barWidth / 2, baseY - h2, barWidth, h2, 4);
-      
-      // Value on bar
-      p.fill(255);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.textSize(16);
-      p.textStyle(p.BOLD);
-      const val2 = after.gdp >= 1e9 ? (after.gdp/1e9).toFixed(2) + "B" : (after.gdp/1e6).toFixed(0) + "M";
-      p.text("$" + val2, x2, baseY - h2 + 30);
+      let country = this.dropdown.value();
+      if (!country || country === "-- Select a Country --") {
+        p.text("Select a country to view data", 20, 40);
+        return;
+      }
 
-      // Year label
-      p.fill(26, 26, 26);
-      p.textStyle(p.NORMAL);
-      p.textSize(18);
-      p.text("2024", x2, baseY + 30);
+      let before = this.dataMap[country]?.[2022] || { gdp_usd: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
+      let after = this.dataMap[country]?.[2024] || { gdp_usd: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
 
-      // Tariff badge
-      const tariffColor2 = after.direction === "increase" ? p.color(220, 38, 38) : p.color(5, 150, 105);
-      p.fill(tariffColor2);
-      p.rect(x2 - 45, baseY - h2 - 40, 90, 26, 13);
-      p.fill(255);
-      p.textSize(13);
-      p.text(after.tariff_prev + "% tariff", x2, baseY - h2 - 27);
+      before.gdp_usd = Number(before.gdp_usd) || 0;
+      after.gdp_usd = Number(after.gdp_usd) || 0;
 
-      // Change indicator
-      const pctChange = ((after.gdp - before.gdp) / before.gdp * 100).toFixed(1);
-      const isPositive = pctChange >= 0;
-      
-      p.fill(isPositive ? p.color(5, 150, 105) : p.color(220, 38, 38));
-      p.textAlign(p.CENTER, p.CENTER);
-      p.textSize(24);
-      p.textStyle(p.BOLD);
-      const arrow = isPositive ? "↑" : "↓";
-      p.text(arrow + " " + Math.abs(pctChange) + "%", (x1 + x2) / 2, margin.top - 30);
-    }
+      if (before.gdp_usd === 0 && after.gdp_usd === 0) {
+        p.text("No GDP data available for this country", p.width / 2, p.height / 2);
+        return;
+      }
+
+      p.textAlign(p.CENTER);
+      p.text(`GDP of ${country} Before and After Tariff`, p.width / 2, 30);
+
+      // --- Legend ---
+      const legendX = 50;
+      const legendY = 60;
+      const legendSpacing = 20;
+
+      p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
+      p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("GDP (USD)", legendX + 20, legendY + 7.5);
+
+      p.fill("#5DD548"); p.rect(legendX + 150, legendY, 15, 15);
+      p.fill(0); p.text("Tariff ↑", legendX + 170, legendY + 7.5);
+
+      p.fill("#FC3640"); p.rect(legendX + 270, legendY, 15, 15);
+      p.fill(0); p.text("Tariff ↓", legendX + 290, legendY + 7.5);
+
+      // --- Bars ---
+      let maxVal = Math.max(before.gdp_usd, after.gdp_usd);
+      let barWidth = 100;
+      let gap = 10;
+
+      let bars = [];
+
+      // BEFORE 2022
+      let xBefore = p.width / 3;
+      let hBefore = p.map(before.gdp_usd, 0, maxVal, 0, 250);
+
+      p.fill("#113EA7");
+      p.rect(xBefore - barWidth/2, p.height - 80 - hBefore, barWidth, hBefore);
+      bars.push({ x: xBefore - barWidth/2, y: p.height - 80 - hBefore, w: barWidth, h: hBefore, label: `GDP: $${before.gdp_usd.toLocaleString()}` });
+
+      p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
+      p.textAlign(p.CENTER);
+      p.text(`Tariff: ${before.tariff_prev_year}%`, xBefore, p.height - 320);
+      p.fill(0);
+      p.text("Before Tariff (2022)", xBefore, p.height - 40);
+
+      // AFTER 2024
+      let xAfter = (2 * p.width) / 3;
+      let hAfter = p.map(after.gdp_usd, 0, maxVal, 0, 250);
+
+      p.fill("#113EA7");
+      p.rect(xAfter - barWidth/2, p.height - 80 - hAfter, barWidth, hAfter);
+      bars.push({ x: xAfter - barWidth/2, y: p.height - 80 - hAfter, w: barWidth, h: hAfter, label: `GDP: $${after.gdp_usd.toLocaleString()}` });
+
+      p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
+      p.text(`Tariff: ${after.tariff_prev_year}%`, xAfter, p.height - 320);
+      p.fill(0);
+      p.text("After Tariff (2024)", xAfter, p.height - 40);
+
+      // --- Hover tooltips ---
+      bars.forEach((b) => {
+        if (p.mouseX > b.x && p.mouseX < b.x + b.w &&
+            p.mouseY > b.y && p.mouseY < b.y + b.h) {
+          p.fill(255, 255, 200);
+          p.stroke(0);
+          p.rect(p.mouseX + 10, p.mouseY - 20, p.textWidth(b.label) + 10, 20);
+          p.noStroke();
+          p.fill(0);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text(b.label, p.mouseX + 15, p.mouseY - 10);
+        }
+      });
+    },
   };
 })();
+
