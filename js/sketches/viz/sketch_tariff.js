@@ -12,24 +12,26 @@
     initData: function (p) {
       if (this._dataInitialized) return;
 
-      this.statusMessage = "Loading trade data…";
-
+      console.log("Loading CSV table...");
       this.table = p.loadTable(
         "data/datasets/Improved_Dataset/trade_master_full.csv",
         "csv",
         "header",
         () => {
+          console.log("CSV loaded successfully!");
           this.processData();
           this._dataInitialized = true;
-          this.statusMessage = ""; // clear loading message
-          console.log("Data loaded:", this.data);
+        },
+        (err) => {
+          console.error("Failed to load table:", err);
+          this.statusMessage = "Failed to load trade data!";
         }
       );
     },
 
     processData: function () {
       if (!this.table || typeof this.table.getRowCount !== "function") {
-        this.statusMessage = "Failed to load trade data.";
+        this.statusMessage = "Failed to process trade data.";
         return;
       }
 
@@ -45,21 +47,22 @@
         });
       }
 
-      // List of countries and default selection
       this.countries = [...new Set(this.data.map(d => d.country))];
-      if (!this.selectedCountry && this.countries.length) this.selectedCountry = this.countries[0];
+      this.selectedCountry = this.countries.length ? this.countries[0] : null;
 
-      console.log("Processed data stored:", this.data);
+      console.log("Countries loaded:", this.countries);
+      console.log("First 5 rows of data:", this.data.slice(0, 5));
     },
+
     setupControls: function (p) {
       if (this._controlsSetup) return;
+      this._controlsSetup = true;
 
       const container = document.getElementById("vis");
       if (!container) return;
-
       container.innerHTML = "";
 
-      // Dropdown for country selection
+      // Dropdown
       const dropdown = document.createElement("select");
       dropdown.className = "form-select";
       dropdown.style.width = "240px";
@@ -74,15 +77,15 @@
 
       dropdown.onchange = () => {
         this.selectedCountry = dropdown.value;
+        console.log("Selected country:", this.selectedCountry);
       };
       container.appendChild(dropdown);
 
       // Canvas
       this.canvas = p.createCanvas(900, 400);
       this.canvas.parent("vis");
-
-      this._controlsSetup = true;
     },
+
     draw: function (p) {
       if (!this._controlsSetup) this.setupControls(p);
       if (!this._dataInitialized) this.initData(p);
@@ -90,14 +93,12 @@
       p.background(250);
 
       if (!this.data.length || !this.selectedCountry) {
-        // Only show message while loading
         p.fill(0);
         p.textSize(20);
         p.text(this.statusMessage, 20, 40);
         return;
       }
 
-      // Filter data for selected country
       const rows = this.data.filter(d => d.country === this.selectedCountry);
       if (!rows.length) {
         p.fill(0);
@@ -105,12 +106,12 @@
         return;
       }
 
-      // Prepare chart
       const years = rows.map(r => r.year);
       const imports = rows.map(r => r.import_value);
       const exports = rows.map(r => r.export_value);
       const tariffs = rows.map(r => r.tariff_prev_year);
 
+      // Chart margins
       const marginL = 80, marginR = 80, marginT = 40, marginB = 80;
       const chartW = p.width - marginL - marginR;
       const chartH = p.height - marginT - marginB;
@@ -120,9 +121,8 @@
 
       // Axes
       p.stroke(0);
-      p.line(marginL, marginT, marginL, marginT + chartH);
-      p.line(marginL, marginT + chartH, marginL + chartW, marginT + chartH);
-      p.line(marginL + chartW, marginT, marginL + chartW, marginT + chartH);
+      p.line(marginL, marginT, marginL, marginT + chartH); // left Y
+      p.line(marginL, marginT + chartH, marginL + chartW, marginT + chartH); // bottom X
 
       // Title
       p.noStroke();
@@ -130,7 +130,7 @@
       p.textSize(20);
       p.text("Trade & Tariff Data: " + this.selectedCountry, marginL, marginT - 10);
 
-      // Imports line
+      // Import line
       p.stroke(50, 100, 200);
       p.strokeWeight(3);
       p.noFill();
@@ -142,7 +142,7 @@
       });
       p.endShape();
 
-      // Exports line
+      // Export line
       p.stroke(255, 150, 50);
       p.strokeWeight(3);
       p.beginShape();
@@ -153,7 +153,7 @@
       });
       p.endShape();
 
-      // Tariffs bars
+      // Tariff bars
       p.noStroke();
       p.fill(220, 60, 60, 150);
       rows.forEach(r => {
@@ -182,8 +182,6 @@
         p.fill(0);
         p.text(val.toFixed(0), marginL - 5, yPos);
       }
-      p.textAlign(p.LEFT, p.CENTER);
-      p.text("USD", marginL - 65, marginT + chartH / 2);
 
       // Right Y-axis (Tariff %)
       p.textAlign(p.LEFT, p.CENTER);
@@ -198,27 +196,24 @@
       // Legend
       p.noStroke();
       p.textSize(12);
-      // Imports
       p.fill(50, 100, 200);
       p.rect(marginL + chartW - 120, marginT, 12, 12);
       p.fill(0);
       p.text("Imports", marginL + chartW - 100, marginT + 10);
-      // Exports
       p.fill(255, 150, 50);
       p.rect(marginL + chartW - 120, marginT + 20, 12, 12);
       p.fill(0);
       p.text("Exports", marginL + chartW - 100, marginT + 30);
-      // Tariffs
       p.fill(220, 60, 60, 150);
       p.rect(marginL + chartW - 120, marginT + 40, 12, 12);
       p.fill(0);
       p.text("Tariff %", marginL + chartW - 100, marginT + 50);
     }
   };
+
   document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("vis")) {
-      new p5(window.sketch_tariff, "vis");
-    }
+    new p5(window.sketch_tariff, "vis");
   });
 })();
+
    
