@@ -1,138 +1,199 @@
+// sketch_gdp.js
 (function () {
-  window.sketch_gdp = {
-    selectedYear: "2023",
-    _controlsSetup: false,
+    window.sketch_gdp = {
+        _controlsSetup: false,
+        _dataInitialized: false,
+        table: null,
+        data: [],
+        countries: [],
+        selectedCountry: null,
+        canvas: null,
 
-    data: [
-      { country: "CHN", gdp_2023: 18000, gdp_2024: 18800, gdp_2025: 19500 },
-      { country: "MEX", gdp_2023: 1300,  gdp_2024: 1380,  gdp_2025: 1450 },
-      { country: "CAN", gdp_2023: 2200,  gdp_2024: 2300,  gdp_2025: 2400 },
-      { country: "DEU", gdp_2023: 4200,  gdp_2024: 4350,  gdp_2025: 4500 },
-      { country: "JPN", gdp_2023: 5000,  gdp_2024: 5100,  gdp_2025: 5250 },
-      { country: "BRA", gdp_2023: 1900,  gdp_2024: 2000,  gdp_2025: 2100 },
-      { country: "GBR", gdp_2023: 3100,  gdp_2024: 3200,  gdp_2025: 3300 },
-      { country: "IND", gdp_2023: 3500,  gdp_2024: 3800,  gdp_2025: 4100 },
-      { country: "NGA", gdp_2023: 500,   gdp_2024: 540,   gdp_2025: 580 },
-      { country: "KOR", gdp_2023: 1800,  gdp_2024: 1900,  gdp_2025: 2000 }
-    ],
+        // Load CSV data
+        initData: function (p) {
+            if (this._dataInitialized) return;
+            this.table = p.loadTable(
+                "data/datasets/Improved_Dataset/trade_master_full.csv",
+                "csv",
+                "header",
+                () => {
+                    this.processData();
+                }
+            );
+            this._dataInitialized = true;
+        },
 
-    setupControls: function (p) {
-      if (this._controlsSetup) return;
+        // Convert table to usable array
+        processData: function () {
+            if (!this.table) return;
 
-      this.buttonBoxes = [
-        { year: "2023", x: 60, y: 20, w: 60, h: 30 },
-        { year: "2024", x: 130, y: 20, w: 60, h: 30 },
-        { year: "2025", x: 200, y: 20, w: 60, h: 30 }
-      ];
+            this.data = [];
+            for (let r = 0; r < this.table.getRowCount(); r++) {
+                const row = this.table.getRow(r);
+                this.data.push({
+                    year: row.getNum("year"),
+                    country: row.getString("country"),
+                    gdp_usd: row.getNum("gdp_usd"),
+                    tariff_prev_year: row.getNum("tariff_prev_year")
+                });
+            }
 
-      p.mouseClicked = () => {
-        this.buttonBoxes.forEach(btn => {
-          if (
-            p.mouseX >= btn.x &&
-            p.mouseX <= btn.x + btn.w &&
-            p.mouseY >= btn.y &&
-            p.mouseY <= btn.y + btn.h
-          ) {
-            this.selectedYear = btn.year;
-            p.redraw();
-          }
-        });
-      };
+            this.countries = [...new Set(this.data.map(d => d.country))];
+            if (!this.selectedCountry) this.selectedCountry = this.countries[0];
+        },
 
-      this._controlsSetup = true;
-    },
+        // Create dropdown and canvas
+        setupControls: function (p) {
+            if (this._controlsSetup) return;
 
-    draw: function (p) {
-      if (!this._controlsSetup) this.setupControls(p);
+            const container = document.getElementById("vis");
+            container.innerHTML = "";
 
-      const margin = { top: 100, right: 50, bottom: 80, left: 70 };
-      const chartWidth = 900 - margin.left - margin.right;
-      const chartHeight = 500 - margin.top - margin.bottom;
+            // Dropdown
+            const dropdown = document.createElement("select");
+            dropdown.className = "form-select";
+            dropdown.style.width = "240px";
+            dropdown.style.marginBottom = "10px";
 
-      p.push();
-      p.background(255);
-      p.textFont("Arial");
+            this.countries.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.textContent = c;
+                dropdown.appendChild(opt);
+            });
 
-      // title
-      p.textAlign(p.CENTER, p.CENTER);
-      p.textSize(22);
-      p.fill(0);
-      p.text("GDP of Different Countries 2023–2025", 450, 45);
+            dropdown.onchange = () => {
+                this.selectedCountry = dropdown.value;
+            };
 
-      // 2025 tariff note
-      if (this.selectedYear === "2025") {
-        p.textSize(16);
-        p.fill("#cc0000");
-        p.text("Tariffs have been placed", 450, 70);
-      }
+            container.appendChild(dropdown);
 
-      // configuring buttons
-      this.buttonBoxes.forEach(btn => {
-        p.stroke(0);
-        p.strokeWeight(1);
-        p.fill(this.selectedYear === btn.year ? "#c6efc6" : "#eeeeee");
-        p.rect(btn.x, btn.y, btn.w, btn.h, 5);
+            // Canvas
+            this.canvas = p.createCanvas(900, 400);
+            this.canvas.parent("vis");
 
-        p.noStroke();
-        p.fill(0);
-        p.textSize(14);
-        p.text(btn.year, btn.x + btn.w / 2, btn.y + btn.h / 2);
-      });
+            this._controlsSetup = true;
+        },
 
-      // getting the data
-      const selectedYear = this.selectedYear;
-      const data = this.data;
+        // Draw chart
+        draw: function (p) {
+            p.background(250);
 
-      const barCount = data.length;
-      const xStep = chartWidth / barCount;
-      const barWidth = xStep * 0.55;
+            if (!this.data.length || !this.selectedCountry) {
+                p.fill(0);
+                p.textSize(20);
+                p.text("Select a country to view its GDP data.", 20, 40);
+                return;
+            }
 
-      const maxValue = p.max(data.map(d => d["gdp_" + selectedYear]));
+            const rows = this.data.filter(d => d.country === this.selectedCountry);
+            if (!rows.length) {
+                p.fill(0);
+                p.text("No data for this country.", 20, 40);
+                return;
+            }
 
-      // bar graph
-      data.forEach((d, i) => {
-        const x = margin.left + i * xStep + xStep * 0.2;
-        const baseY = margin.top + chartHeight;
+            const years = rows.map(r => r.year);
+            const gdp = rows.map(r => r.gdp_usd);
+            const tariffs = rows.map(r => r.tariff_prev_year);
 
-        const gdp = d["gdp_" + selectedYear];
-        const barHeight = (gdp / maxValue) * chartHeight;
+            // Chart margins
+            const marginL = 80, marginR = 80, marginT = 40, marginB = 80;
+            const chartW = p.width - marginL - marginR;
+            const chartH = p.height - marginT - marginB;
 
-        p.fill("#2ca02c"); // green GDP bars
-        p.rect(x, baseY - barHeight, barWidth, barHeight);
+            const maxGDP = Math.max(...gdp) * 1.25;
+            const maxTariff = Math.max(...tariffs, 10);
 
-        // GDP label
-        p.fill(255);
-        p.text(
-          gdp.toLocaleString(),
-          x + barWidth / 2,
-          baseY - barHeight / 2
-        );
+            // Axes
+            p.stroke(0);
+            // Left Y-axis (GDP)
+            p.line(marginL, marginT, marginL, marginT + chartH);
+            // Bottom X-axis
+            p.line(marginL, marginT + chartH, marginL + chartW, marginT + chartH);
+            // Right Y-axis (Tariff)
+            p.line(marginL + chartW, marginT, marginL + chartW, marginT + chartH);
 
-        // Country code label
-        p.fill(0);
-        p.textSize(12);
-        p.text(d.country, x + barWidth / 2, baseY + 15);
-      });
+            // Chart title
+            p.noStroke();
+            p.fill(20);
+            p.textSize(20);
+            p.text("GDP & Tariff Data: " + this.selectedCountry, marginL, marginT - 10);
 
-      // labels
-      p.stroke(200);
-      for (let i = 0; i <= 5; i++) {
-        const yPos = margin.top + (chartHeight / 5) * i;
-        p.line(margin.left, yPos, 900 - margin.right, yPos);
+            // GDP line
+            p.stroke(50, 100, 200);
+            p.strokeWeight(3);
+            p.noFill();
+            p.beginShape();
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                const y = p.map(r.gdp_usd, 0, maxGDP, marginT + chartH, marginT);
+                p.vertex(x, y);
+            });
+            p.endShape();
 
-        p.noStroke();
-        p.fill(0);
-        p.text(
-          Math.round(maxValue * (1 - i / 5)).toLocaleString(),
-          margin.left - 40,
-          yPos
-        );
-        p.stroke(200);
-      }
+            // TARIFF bars (right Y-axis)
+            p.noStroke();
+            p.fill(220, 60, 60, 150);
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                const y = p.map(r.tariff_prev_year, 0, maxTariff, marginT + chartH, marginT);
+                const barH = marginT + chartH - y;
+                p.rect(x - 6, y, 12, barH);
+            });
 
-      p.pop();
-    }
-  };
+            // X-axis labels
+            p.fill(0);
+            p.textSize(12);
+            p.textAlign(p.CENTER);
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                p.text(r.year, x, marginT + chartH + 20);
+            });
+
+            // Left Y-axis labels (GDP)
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.textSize(11);
+            for (let t = 0; t <= 5; t++) {
+                const val = (maxGDP / 5) * t;
+                const yPos = p.map(val, 0, maxGDP, marginT + chartH, marginT);
+                p.noStroke();
+                p.fill(0);
+                p.text(val.toFixed(0), marginL - 5, yPos);
+            }
+            p.textAlign(p.LEFT, p.CENTER);
+            p.text("GDP (USD)", marginL - 65, marginT + chartH / 2);
+
+            // Right Y-axis labels (Tariff %)
+            p.textAlign(p.LEFT, p.CENTER);
+            for (let t = 0; t <= 5; t++) {
+                const val = (maxTariff / 5) * t;
+                const yPos = p.map(val, 0, maxTariff, marginT + chartH, marginT);
+                p.noStroke();
+                p.fill(220, 60, 60);
+                p.text(val.toFixed(0) + "%", marginL + chartW + 5, yPos);
+            }
+
+            // Legend
+            p.noStroke();
+            p.textSize(12);
+
+            // GDP
+            p.fill(50, 100, 200);
+            p.rect(marginL + chartW - 120, marginT, 12, 12);
+            p.fill(0);
+            p.text("GDP", marginL + chartW - 100, marginT + 10);
+
+            // Tariffs
+            p.fill(220, 60, 60, 150);
+            p.rect(marginL + chartW - 120, marginT + 20, 12, 12);
+            p.fill(0);
+            p.text("Tariff %", marginL + chartW - 100, marginT + 30);
+        }
+    };
 })();
+
+
+
 
 

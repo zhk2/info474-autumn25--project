@@ -25,15 +25,24 @@
                 window.VizTitle.draw(p, manager, ai, progress);
                 return;
             }
-
             if (ai === 4) {
                 if (window.sketch_tariff) {
-                    if (typeof window.sketch_tariff.setupControls === 'function' && !window.sketch_tariff._controlsSetup) {
-                        window.sketch_tariff.setupControls(p);
-                        window.sketch_tariff._controlsSetup = true; // flag so it doesn’t recreate every frame
-                    }
-                    if (typeof window.sketch_tariff.draw === 'function') {
-                        window.sketch_tariff.draw(p, manager, ai, progress);
+        // Initialize data if not yet loaded
+                    if (!window.sketch_tariff._dataInitialized) {
+                        if (typeof window.sketch_tariff.initData === "function") {
+                            window.sketch_tariff.initData(p);
+                            window.sketch_tariff._dataInitialized = true; // flag to prevent multiple loads
+                         }
+                     }
+
+        // Setup controls (dropdown + canvas) if not done yet
+                     if (typeof window.sketch_tariff.setupControls === "function" && !window.sketch_tariff._controlsSetup) {
+                         window.sketch_tariff.setupControls(p);
+                     }
+
+        // Only draw if draw function exists
+                    if (typeof window.sketch_tariff.draw === "function") {
+                        window.sketch_tariff.draw(p);
                         return;
                     }
                 }

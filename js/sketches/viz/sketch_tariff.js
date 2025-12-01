@@ -1,139 +1,223 @@
+// sketch_tariff.js
 (function () {
-  window.sketch_tariff = {
-    selectedYear: "2023",
-    _controlsSetup: false,
+    window.sketch_tariff = {
+        _controlsSetup: false,
+        _dataInitialized: false,
+        table: null,
+        data: [],
+        countries: [],
+        selectedCountry: null,
+        canvas: null,
 
-    data: [
-      { country: "CHN", imports_2023: 120, imports_2024: 135, imports_2025: 150, exports_2023: 80, exports_2024: 88, exports_2025: 95 },
-      { country: "MEX", imports_2023: 90, imports_2024: 100, imports_2025: 110, exports_2023: 70, exports_2024: 78, exports_2025: 85 },
-      { country: "CAN", imports_2023: 100, imports_2024: 110, imports_2025: 120, exports_2023: 60, exports_2024: 68, exports_2025: 75 },
-      { country: "DEU", imports_2023: 80, imports_2024: 88, imports_2025: 95, exports_2023: 50, exports_2024: 58, exports_2025: 65 },
-      { country: "JPN", imports_2023: 110, imports_2024: 120, imports_2025: 130, exports_2023: 90, exports_2024: 98, exports_2025: 105 },
-      { country: "BRA", imports_2023: 95, imports_2024: 105, imports_2025: 115, exports_2023: 70, exports_2024: 78, exports_2025: 85 },
-      { country: "GBR", imports_2023: 105, imports_2024: 115, imports_2025: 125, exports_2023: 75, exports_2024: 83, exports_2025: 90 },
-      { country: "IND", imports_2023: 115, imports_2024: 130, imports_2025: 140, exports_2023: 85, exports_2024: 93, exports_2025: 100 },
-      { country: "NGA", imports_2023: 70, imports_2024: 78, imports_2025: 85, exports_2023: 45, exports_2024: 53, exports_2025: 60 },
-      { country: "KOR", imports_2023: 125, imports_2024: 135, imports_2025: 145, exports_2023: 95, exports_2024: 103, exports_2025: 110 }
-    ],
+        // Load CSV data
+        initData: function (p) {
+            if (this._dataInitialized) return;
+            this.table = p.loadTable(
+                "data/datasets/Improved_Dataset/trade_master_full.csv",
+                "csv",
+                "header",
+                () => {
+                    this.processData();
+                }
+            );
+            this._dataInitialized = true;
+        },
 
-    setupControls: function (p) {
-      if (this._controlsSetup) return;
+        // Convert table to usable array
+        processData: function () {
+            if (!this.table) return;
 
-      this.buttons = [
-        { year: "2023", x: 50, y: 20, w: 60, h: 28 },
-        { year: "2024", x: 120, y: 20, w: 60, h: 28 },
-        { year: "2025", x: 190, y: 20, w: 60, h: 28 }
-      ];
+            this.data = [];
+            for (let r = 0; r < this.table.getRowCount(); r++) {
+                const row = this.table.getRow(r);
+                this.data.push({
+                    year: row.getNum("year"),
+                    country: row.getString("country"),
+                    import_value: row.getNum("import_value"),
+                    export_value: row.getNum("export_value"),
+                    tariff_prev_year: row.getNum("tariff_prev_year")
+                });
+            }
 
-      p.mouseClicked = () => {
-        this.buttons.forEach(btn => {
-          if (p.mouseX >= btn.x && p.mouseX <= btn.x + btn.w &&
-              p.mouseY >= btn.y && p.mouseY <= btn.y + btn.h) {
-            this.selectedYear = btn.year;
-          }
-        });
-      };
+            this.countries = [...new Set(this.data.map(d => d.country))];
+            if (!this.selectedCountry) this.selectedCountry = this.countries[0];
+        },
 
-      this._controlsSetup = true;
-    },
+        // Create dropdown and canvas
+        setupControls: function (p) {
+            if (this._controlsSetup) return;
 
-    draw: function (p) {
-      if (!this._controlsSetup) this.setupControls(p);
+            const container = document.getElementById("vis");
+            container.innerHTML = "";
 
-      const margin = { top: 100, right: 50, bottom: 80, left: 70 };
-      const chartW = 900 - margin.left - margin.right;
-      const chartH = 500 - margin.top - margin.bottom;
+            // Dropdown
+            const dropdown = document.createElement("select");
+            dropdown.className = "form-select";
+            dropdown.style.width = "240px";
+            dropdown.style.marginBottom = "10px";
 
-      p.background(255);
-      p.textAlign(p.CENTER, p.CENTER);
+            this.countries.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c;
+                opt.textContent = c;
+                dropdown.appendChild(opt);
+            });
 
-      // Title
-      p.textSize(15);
-      p.fill(0);
-      p.text("Imports and Exports of Different Countries (2023–2025)", 450, 45);
+            dropdown.onchange = () => {
+                this.selectedCountry = dropdown.value;
+            };
 
-      // Subtitle for 2025
-      if (this.selectedYear === "2025") {
-        p.textSize(16);
-        p.fill("#cc0000");
-        p.text("Tariffs have been placed", 450, 75);
-      }
+            container.appendChild(dropdown);
 
-      // Draw buttons
-      this.buttons.forEach(b => {
-        p.fill(this.selectedYear === b.year ? "#aac4ff" : "#eaeaea");
-        p.stroke(0);
-        p.rect(b.x, b.y, b.w, b.h, 5);
-        p.noStroke();
-        p.fill(0);
-        p.textSize(14);
-        p.text(b.year, b.x + b.w / 2, b.y + b.h / 2);
-      });
+            // Canvas
+            this.canvas = p.createCanvas(900, 400);
+            this.canvas.parent("vis");
 
-      const data = this.data;
-      const xStep = chartW / data.length;
-      const barW = xStep * 0.55;
+            this._controlsSetup = true;
+        },
 
-      const maxVal = p.max(data.map(d =>
-        d[`imports_${this.selectedYear}`] + d[`exports_${this.selectedYear}`]
-      ));
+        // Draw chart
+        draw: function (p) {
+            p.background(250);
 
-      // Bars
-      data.forEach((d, i) => {
-        const x = margin.left + i * xStep + xStep * 0.2;
-        const yBase = margin.top + chartH;
+            if (!this.data.length || !this.selectedCountry) {
+                p.fill(0);
+                p.textSize(20);
+                p.text("Select a country to view its trade data.", 20, 40);
+                return;
+            }
 
-        const imp = d[`imports_${this.selectedYear}`];
-        const exp = d[`exports_${this.selectedYear}`];
+            const rows = this.data.filter(d => d.country === this.selectedCountry);
+            if (!rows.length) {
+                p.fill(0);
+                p.text("No data for this country.", 20, 40);
+                return;
+            }
 
-        const impH = (imp / maxVal) * chartH;
-        const expH = (exp / maxVal) * chartH;
+            const years = rows.map(r => r.year);
+            const imports = rows.map(r => r.import_value);
+            const exports = rows.map(r => r.export_value);
+            const tariffs = rows.map(r => r.tariff_prev_year);
 
-        // Imports
-        p.fill("#1f77b4");
-        p.rect(x, yBase - impH, barW, impH);
-        p.fill(255);
-        p.text(imp, x + barW / 2, yBase - impH / 2);
+            // Chart margins
+            const marginL = 80, marginR = 80, marginT = 40, marginB = 80;
+            const chartW = p.width - marginL - marginR;
+            const chartH = p.height - marginT - marginB;
 
-        // Exports
-        p.fill("#ff7f0e");
-        p.rect(x, yBase - impH - expH, barW, expH);
-        p.fill(255);
-        p.text(exp, x + barW / 2, yBase - impH - expH / 2);
+            const maxTrade = Math.max(...imports, ...exports) * 1.25;
+            const maxTariff = Math.max(...tariffs, 10);
 
-        // Country label
-        p.fill(0);
-        p.textSize(12);
-        p.text(d.country, x + barW / 2, yBase + 15);
-      });
+            // Axes
+            p.stroke(0);
+            // Left Y-axis (Trade)
+            p.line(marginL, marginT, marginL, marginT + chartH);
+            // Bottom X-axis
+            p.line(marginL, marginT + chartH, marginL + chartW, marginT + chartH);
+            // Right Y-axis (Tariff)
+            p.line(marginL + chartW, marginT, marginL + chartW, marginT + chartH);
 
-      // Grid lines + Y labels
-      p.stroke(200);
-      for (let i = 0; i <= 5; i++) {
-        const y = margin.top + (chartH / 5) * i;
-        p.line(margin.left, y, 900 - margin.right, y);
+            // Chart title
+            p.noStroke();
+            p.fill(20);
+            p.textSize(20);
+            p.text("Trade & Tariff Data: " + this.selectedCountry, marginL, marginT - 10);
 
-        p.noStroke();
-        p.fill(0);
-        p.text(Math.round(maxVal * (1 - i / 5)), margin.left - 35, y);
-        p.stroke(200);
-      }
+            // IMPORT line
+            p.stroke(50, 100, 200);
+            p.strokeWeight(3);
+            p.noFill();
+            p.beginShape();
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                const y = p.map(r.import_value, 0, maxTrade, marginT + chartH, marginT);
+                p.vertex(x, y);
+            });
+            p.endShape();
 
-      // Legend
-      p.noStroke();
-      p.fill("#1f77b4");
-      p.rect(70, 70, 20, 20);
-      p.fill(0);
-      p.textAlign(p.LEFT, p.CENTER);
-      p.text("imports", 95, 80);
+            // EXPORT line
+            p.stroke(255, 150, 50);
+            p.strokeWeight(3);
+            p.beginShape();
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                const y = p.map(r.export_value, 0, maxTrade, marginT + chartH, marginT);
+                p.vertex(x, y);
+            });
+            p.endShape();
 
-      p.fill("#ff7f0e");
-      p.rect(170, 70, 20, 20);
-      p.fill(0);
-      p.text("exports", 195, 80);
-    }
-  };
+            // TARIFF bars (right Y-axis)
+            p.noStroke();
+            p.fill(220, 60, 60, 150);
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                const y = p.map(r.tariff_prev_year, 0, maxTariff, marginT + chartH, marginT);
+                const barH = marginT + chartH - y;
+                p.rect(x - 6, y, 12, barH);
+            });
+
+            // X-axis labels
+            p.fill(0);
+            p.textSize(12);
+            p.textAlign(p.CENTER);
+            rows.forEach(r => {
+                const x = p.map(r.year, years[0], years.at(-1), marginL, marginL + chartW);
+                p.text(r.year, x, marginT + chartH + 20);
+            });
+
+            // Left Y-axis labels (Trade)
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.textSize(11);
+            for (let t = 0; t <= 5; t++) {
+                const val = (maxTrade / 5) * t;
+                const yPos = p.map(val, 0, maxTrade, marginT + chartH, marginT);
+                p.noStroke();
+                p.fill(0);
+                p.text(val.toFixed(0), marginL - 5, yPos);
+            }
+            p.textAlign(p.LEFT, p.CENTER);
+            p.text("USD", marginL - 65, marginT + chartH / 2);
+
+            // Right Y-axis labels (Tariff %)
+            p.textAlign(p.LEFT, p.CENTER);
+            for (let t = 0; t <= 5; t++) {
+                const val = (maxTariff / 5) * t;
+                const yPos = p.map(val, 0, maxTariff, marginT + chartH, marginT);
+                p.noStroke();
+                p.fill(220, 60, 60);
+                p.text(val.toFixed(0) + "%", marginL + chartW + 5, yPos);
+            }
+
+            // Legend
+            p.noStroke();
+            p.textSize(12);
+
+            // Imports
+            p.fill(50, 100, 200);
+            p.rect(marginL + chartW - 120, marginT, 12, 12);
+            p.fill(0);
+            p.text("Imports", marginL + chartW - 100, marginT + 10);
+
+            // Exports
+            p.fill(255, 150, 50);
+            p.rect(marginL + chartW - 120, marginT + 20, 12, 12);
+            p.fill(0);
+            p.text("Exports", marginL + chartW - 100, marginT + 30);
+
+            // Tariffs
+            p.fill(220, 60, 60, 150);
+            p.rect(marginL + chartW - 120, marginT + 40, 12, 12);
+            p.fill(0);
+            p.text("Tariff %", marginL + chartW - 100, marginT + 50);
+        }
+    };
 })();
+
+
+
+
+
+
+
 
 
 
