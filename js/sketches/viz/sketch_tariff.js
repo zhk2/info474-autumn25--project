@@ -4,8 +4,10 @@
     dropdown: null,
     countries: [],
     dataMap: {},
+    canvas: null,
     _controlsSetup: false,
     _dataLoaded: false,
+    sectionEl: null, // container section
 
     initData(p) {
       // Load CSV asynchronously
@@ -61,31 +63,44 @@
     setupControls(p) {
       if (this._controlsSetup || !this._dataLoaded) return;
 
-      // Canvas (append to body)
-      this.canvas = p.createCanvas(900, 500);
+      // Section container
+      this.sectionEl = document.querySelector('section[data-active-index="4"]');
+      if (!this.sectionEl) {
+        console.error("❌ Section 4 not found");
+        return;
+      }
+      this.sectionEl.style.position = "relative";
+      this.sectionEl.style.minHeight = "600px"; // enough space for canvas
 
-      // Dropdown (absolute positioning)
+      // Canvas inside section
+      this.canvas = p.createCanvas(900, 500);
+      this.canvas.parent(this.sectionEl);
+
+      // Dropdown inside section
       this.dropdown = p.createSelect();
-      this.dropdown.position(20, 20);
+      this.dropdown.parent(this.sectionEl);
       this.dropdown.option("-- Select a Country --");
-      this.countries.forEach((c) => this.dropdown.option(c, c));
+      this.countries.forEach((c) => this.dropdown.option(c));
       this.dropdown.changed(() => p.redraw());
 
       this._controlsSetup = true;
     },
 
     draw(p) {
+      if (!this._controlsSetup || !this._dataLoaded) return;
+
+      // Show dropdown only if section is visible
+      const sectionVisible = this.sectionEl.getBoundingClientRect().top < window.innerHeight &&
+                             this.sectionEl.getBoundingClientRect().bottom > 0;
+      if (sectionVisible) this.dropdown.show();
+      else this.dropdown.hide();
+
       p.background(255);
       p.fill(0);
       p.textSize(18);
 
-      if (!this._dataLoaded) {
+      if (!this.dropdown || !this.countries.length) {
         p.text("Loading trade data...", 20, 40);
-        return;
-      }
-
-      if (!this.dropdown) {
-        p.text("Dropdown not ready yet", 20, 40);
         return;
       }
 
@@ -99,7 +114,6 @@
       let before = this.dataMap[country]?.[2022] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
       let after = this.dataMap[country]?.[2024] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
 
-      // Ensure numeric
       before.import_value = Number(before.import_value) || 0;
       before.export_value = Number(before.export_value) || 0;
       before.tariff_prev_year = Number(before.tariff_prev_year) || 0;
@@ -108,54 +122,88 @@
       after.export_value = Number(after.export_value) || 0;
       after.tariff_prev_year = Number(after.tariff_prev_year) || 0;
 
-      // Debug: log if all zeros
+      // Skip if all zeros
       if (before.import_value + before.export_value === 0 && after.import_value + after.export_value === 0) {
-        console.warn("No trade data available for", country, before, after);
+        console.warn("No trade data available for", country);
         p.text("No trade data available for this country", p.width / 2, p.height / 2);
         return;
       }
 
-      // Title
+      // --- Title ---
       p.textAlign(p.CENTER);
       p.text(`Imports and Exports of ${country} Before and After Tariff`, p.width / 2, 30);
 
-      // Max for scaling bars
+      // --- Legend ---
+      const legendX = 50;
+      const legendY = 60;
+      const legendSpacing = 20;
+
+      // Imports
+      p.fill("#113EA7");
+      p.rect(legendX, legendY, 15, 15);
+      p.fill(0);
+      p.textAlign(p.LEFT, p.CENTER);
+      p.text("Imports", legendX + 20, legendY + 7.5);
+
+      // Exports
+      p.fill("#F57A00");
+      p.rect(legendX + 100, legendY, 15, 15);
+      p.fill(0);
+      p.text("Exports", legendX + 120, legendY + 7.5);
+
+      // Tariff Increase/Decrease
+      p.fill("#5DD548");
+      p.rect(legendX + 220, legendY, 15, 15);
+      p.fill(0);
+      p.text("Tariff ↑", legendX + 240, legendY + 7.5);
+
+      p.fill("#FC3640");
+      p.rect(legendX + 320, legendY, 15, 15);
+      p.fill(0);
+      p.text("Tariff ↓", legendX + 340, legendY + 7.5);
+
+      // --- Bars ---
       let maxVal = Math.max(before.import_value + before.export_value, after.import_value + after.export_value);
+      let barWidth = 50;
+      let gap = 10;
 
-      let barWidth = 130;
-
-      // BEFORE (2022)
-      let x1 = p.width / 3;
-      let hImp1 = p.map(before.import_value, 0, maxVal, 0, 250);
-      let hExp1 = p.map(before.export_value, 0, maxVal, 0, 250);
+      // BEFORE 2022
+      let xBefore = p.width / 3;
+      let hImpBefore = p.map(before.import_value, 0, maxVal, 0, 250);
+      let hExpBefore = p.map(before.export_value, 0, maxVal, 0, 250);
 
       p.fill("#113EA7");
-      p.rect(x1 - barWidth / 2, p.height - 80 - hImp1, barWidth, hImp1);
-      p.fill("#F57A00");
-      p.rect(x1 - barWidth / 2, p.height - 80 - hImp1 - hExp1, barWidth, hExp1);
+      p.rect(xBefore - barWidth - gap/2, p.height - 80 - hImpBefore, barWidth, hImpBefore);
 
-      p.fill(0);
-      p.text("Before Tariff (2022)", x1, p.height - 40);
+      p.fill("#F57A00");
+      p.rect(xBefore + gap/2, p.height - 80 - hExpBefore, barWidth, hExpBefore);
+
       p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
-      p.text(`Tariff: ${before.tariff_prev_year}%`, x1, p.height - 320);
+      p.textAlign(p.CENTER);
+      p.text(`Tariff: ${before.tariff_prev_year}%`, xBefore, p.height - 320);
+      p.fill(0);
+      p.text("Before Tariff (2022)", xBefore, p.height - 40);
 
-      // AFTER (2024)
-      let x2 = (2 * p.width) / 3;
-      let hImp2 = p.map(after.import_value, 0, maxVal, 0, 250);
-      let hExp2 = p.map(after.export_value, 0, maxVal, 0, 250);
+      // AFTER 2024
+      let xAfter = (2 * p.width) / 3;
+      let hImpAfter = p.map(after.import_value, 0, maxVal, 0, 250);
+      let hExpAfter = p.map(after.export_value, 0, maxVal, 0, 250);
 
       p.fill("#113EA7");
-      p.rect(x2 - barWidth / 2, p.height - 80 - hImp2, barWidth, hImp2);
-      p.fill("#F57A00");
-      p.rect(x2 - barWidth / 2, p.height - 80 - hImp2 - hExp2, barWidth, hExp2);
+      p.rect(xAfter - barWidth - gap/2, p.height - 80 - hImpAfter, barWidth, hImpAfter);
 
-      p.fill(0);
-      p.text("After Tariff (2024)", x2, p.height - 40);
+      p.fill("#F57A00");
+      p.rect(xAfter + gap/2, p.height - 80 - hExpAfter, barWidth, hExpAfter);
+
       p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
-      p.text(`Tariff: ${after.tariff_prev_year}%`, x2, p.height - 320);
+      p.text(`Tariff: ${after.tariff_prev_year}%`, xAfter, p.height - 320);
+      p.fill(0);
+      p.text("After Tariff (2024)", xAfter, p.height - 40);
     },
   };
 })();
+
+
 
 
 
