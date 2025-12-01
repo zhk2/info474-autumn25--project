@@ -1,6 +1,5 @@
-// sketch_tariffs_consumers.js
-// Story: "How Tariffs Affect Consumers: Which Goods Are Most Exposed?"
-
+// sketch_tariffs_consumers.js - IMPROVED VERSION
+// Consumer impact visualization with editorial styling
 (function () {
   window.sketch_tariffs_consumers = {
     _controlsSetup: false,
@@ -18,10 +17,8 @@
       "mineral_fuels"
     ],
 
-        preload: function (p) {
+    preload: function (p) {
       if (this.table) return;
-
-      // Show a loading message until the callback fires
       this.statusMessage = "Loading import data…";
 
       this.table = p.loadTable(
@@ -29,7 +26,6 @@
         "csv",
         "header",
         () => {
-          // 🔹 Only process once the CSV has finished loading
           this.processData();
           this.computeStoryHighlight();
         }
@@ -39,13 +35,11 @@
     setupControls: function (p) {
       if (this._controlsSetup) return;
       this._controlsSetup = true;
-      p.textFont("sans-serif");
+      p.textFont("Inter");
 
-      // If table isn’t loaded yet, trigger preload (which has a callback)
       if (!this.table) {
         this.preload(p);
       } else if (!this.years.length) {
-        // If table already exists but we haven’t processed it, do it now
         this.processData();
         this.computeStoryHighlight();
       }
@@ -64,7 +58,6 @@
       const tariffByYear = {};
       let foundUSA = false;
 
-      // 🔹 Scan every column in each row and keep rows that contain USA / United States
       for (let r = 0; r < this.table.getRowCount(); r++) {
         let isUSA = false;
 
@@ -110,11 +103,9 @@
       this.groups = this.targetGroups.filter(g => groupSet.has(g));
 
       if (!foundUSA) {
-        this.statusMessage =
-          "No United States trade rows found in this dataset.";
+        this.statusMessage = "No United States trade rows found in this dataset.";
       } else if (!this.groups.length) {
-        this.statusMessage =
-          "US data found, but none of the target consumer categories were present.";
+        this.statusMessage = "US data found, but none of the target consumer categories were present.";
       } else {
         this.statusMessage = "";
       }
@@ -176,272 +167,226 @@
       }
 
       if (!bestGroup || bestChange <= 0) {
-        this.storyHighlight =
-          "Import exposure has shifted across categories, but not every consumer good responds the same way to tariffs.";
+        this.storyHighlight = "Import exposure has shifted across categories.";
         return;
       }
 
       this.storyHighlight =
         `${this.prettyName(bestGroup)} shows the largest rise in relative import ` +
-        `exposure from ${startYear} to ${endYear}, meaning tariffs and demand ` +
-        "pressures land especially hard on that category.";
+        `exposure from ${startYear} to ${endYear}.`;
     },
 
     draw: function (p, manager, ai, progress) {
       if (!this._controlsSetup) this.setupControls(p);
 
-      p.background(250);
+      // Elegant gradient background
+      const gradSteps = 30;
+      p.noStroke();
+      for (let i = 0; i < gradSteps; i++) {
+        const inter = i / gradSteps;
+        const c = p.lerpColor(
+          p.color(250, 249, 246),
+          p.color(245, 242, 235),
+          inter
+        );
+        p.fill(c);
+        p.rect(0, (p.height / gradSteps) * i, p.width, p.height / gradSteps + 1);
+      }
 
       if (!this.years.length) {
-        p.fill(0);
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(14);
-        p.text(this.statusMessage || "Loading import data…", 20, 20);
+        p.fill(102, 102, 102);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textFont('Inter');
+        p.textSize(16);
+        p.text(this.statusMessage || "Loading import data…", p.width/2, p.height/2);
         return;
       }
 
-      const marginLeft = 80;
-      const marginRight = 220; // a bit more room for legend
-      const headerTop = 26;
-      const headerGap = 64;
-      const marginTop = headerTop + headerGap;
-      const marginBottom = 70;
+      const marginLeft = 100;
+      const marginRight = 240;
+      const marginTop = 130;
+      const marginBottom = 80;
       const chartWidth = p.width - marginLeft - marginRight;
       const chartHeight = p.height - marginTop - marginBottom;
 
-      // ----- Title + subtitle -----
-      p.noStroke();
-      p.fill(25);
+      // Title
+      p.textFont('Spectral');
+      p.textSize(32);
+      p.textStyle(p.BOLD);
       p.textAlign(p.LEFT, p.TOP);
+      p.fill(26, 26, 26);
+      p.text("Consumer Goods & Tariffs", marginLeft, 30);
 
-      p.textSize(18);
-      p.text("How Tariffs Affect Consumers", marginLeft, headerTop);
+      // Subtitle
+      p.textFont('Inter');
+      p.textSize(16);
+      p.textStyle(p.NORMAL);
+      p.fill(102, 102, 102);
+      p.text("US Import Exposure by Category", marginLeft, 70);
 
-      // ----- Chart frame -----
+      // Description
+      p.textSize(13);
+      p.fill(153, 153, 153);
+      const desc = "Normalized import dependence (0–1) with tariff hike periods highlighted";
+      p.text(desc, marginLeft, 95);
+
+      // Chart frame
       p.noFill();
-      p.stroke(0);
-      p.strokeWeight(1);
+      p.stroke(229, 229, 229);
+      p.strokeWeight(2);
       p.rect(marginLeft, marginTop, chartWidth, chartHeight);
 
       const xMin = this.years[0];
       const xMax = this.years[this.years.length - 1];
 
-      // ----- Tariff bands -----
-      // lighter tariff shading so it does not overpower the lines
+      // Tariff highlight bands
       for (const ty of this.tariffYears) {
-        p.fill(255, 235, 235, 70);
-        p.stroke(0);
+        p.fill(255, 220, 220, 90);
+        p.noStroke();
         const tx1 = p.map(ty - 0.5, xMin, xMax, marginLeft, marginLeft + chartWidth);
         const tx2 = p.map(ty + 0.5, xMin, xMax, marginLeft, marginLeft + chartWidth);
         p.rect(tx1, marginTop, tx2 - tx1, chartHeight);
-        p.noStroke();
-        p.fill(120);
-        p.textSize(9);
+        
+        // Label
+        p.fill(220, 38, 38);
+        p.textSize(10);
         p.textAlign(p.CENTER, p.BOTTOM);
+        p.textFont('Inter');
         const midX = (tx1 + tx2) / 2;
-        p.text("Tariff hike", midX, marginTop - 4);
+        p.text("Tariff", midX, marginTop - 6);
+        p.text("hike", midX, marginTop + 8);
       }
 
-      // ----- Grid + Y labels -----
+      // Grid
+      p.stroke(245, 245, 245);
+      p.strokeWeight(1);
+      const yTicks = [0.0, 0.25, 0.5, 0.75, 1.0];
+      p.textFont('Inter');
       p.textSize(11);
       p.textAlign(p.RIGHT, p.CENTER);
-      const yTicks = [0.0, 0.25, 0.5, 0.75, 1.0];
+      p.fill(102, 102, 102);
+      
       for (let i = 0; i < yTicks.length; i++) {
         const val = yTicks[i];
         const yPos = p.map(val, 0, 1, marginTop + chartHeight, marginTop);
-        p.stroke(230);
         p.line(marginLeft, yPos, marginLeft + chartWidth, yPos);
         p.noStroke();
-        p.fill(80);
-        p.text(val.toFixed(2), marginLeft - 8, yPos);
+        p.text(val.toFixed(2), marginLeft - 10, yPos);
+        p.stroke(245, 245, 245);
       }
 
-      // ----- X axis ticks + labels -----
-      p.stroke(210);
-      p.fill(80);
+      // X axis ticks
+      p.stroke(240, 240, 240);
       p.textAlign(p.CENTER, p.TOP);
-      p.textSize(11);
+      p.fill(102, 102, 102);
       const tickStep = Math.max(1, Math.floor(this.years.length / 7));
       for (let xi = 0; xi < this.years.length; xi += tickStep) {
         const year = this.years[xi];
         const xTick = p.map(year, xMin, xMax, marginLeft, marginLeft + chartWidth);
-        p.line(xTick, marginTop + chartHeight, xTick, marginTop + chartHeight + 4);
+        p.line(xTick, marginTop + chartHeight, xTick, marginTop + chartHeight + 5);
         p.noStroke();
-        p.text(year, xTick, marginTop + chartHeight + 6);
-        p.stroke(210);
+        p.text(year, xTick, marginTop + chartHeight + 8);
+        p.stroke(240, 240, 240);
       }
 
-      // ----- Axis labels -----
+      // Axis labels
       p.noStroke();
-      p.fill(0);
-      p.textSize(11);
-      p.textAlign(p.CENTER, p.CENTER);
-      p.text("Year", marginLeft + chartWidth / 2, marginTop + chartHeight + 36);
+      p.fill(102, 102, 102);
+      p.textSize(12);
+      p.textAlign(p.CENTER, p.TOP);
+      p.text("Year", marginLeft + chartWidth / 2, marginTop + chartHeight + 40);
 
       p.push();
-      p.translate(38, marginTop + chartHeight / 2);
+      p.translate(50, marginTop + chartHeight / 2);
       p.rotate(-p.HALF_PI);
-      p.text("US import exposure (normalized 0–1)", 0, 0);
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text("Import Exposure (normalized)", 0, 0);
       p.pop();
-      p.textAlign(p.LEFT, p.BASELINE);
 
-      // ----- Color palette -----
+      // Color palette - sophisticated
       const colors = {
-        electronics: p.color(33, 114, 179), // tech blue
-        vehicles: p.color(220, 70, 70),     // red for autos
-        metals: p.color(120, 120, 120),
-        textiles: p.color(178, 60, 160),
-        food_agriculture: p.color(93, 180, 72),
-        chemicals: p.color(245, 152, 60),   // amber
-        mineral_fuels: p.color(60, 90, 130),
-        manufactures: p.color(40, 160, 120)
+        electronics: p.color(37, 99, 168),
+        chemicals: p.color(217, 119, 6),
+        mineral_fuels: p.color(139, 92, 246),
+        manufactures: p.color(5, 150, 105)
       };
 
-      // ----- Lines + end labels with halos -----
+      // Draw lines
       for (const g of this.groups) {
-        const baseColor = colors[g] || p.color(0);
+        const baseColor = colors[g] || p.color(100, 100, 100);
         const isFocus = (g === "electronics" || g === "chemicals");
-        const mutedColor = p.lerpColor(baseColor, p.color(200, 200, 200), 0.45);
-        const lineColor = isFocus ? baseColor : mutedColor;
 
         p.noFill();
-        p.stroke(lineColor);
-        p.strokeWeight(isFocus ? 2.4 : 1.6);
+        p.stroke(baseColor);
+        p.strokeWeight(isFocus ? 3 : 2);
         p.beginShape();
+        
         let lastX = null;
         let lastY = null;
+        
         for (const year of this.years) {
           let val = this.usaData[g][year] || 0;
-          // Tiny bump for very small non-zero values so lines like Mineral Fuels are still visible
-          let renderVal = val;
-          const tinyBump = 0.005;
-          if (renderVal > 0 && renderVal < tinyBump) {
-            renderVal += tinyBump;
-          }
-
           const xPos = p.map(year, xMin, xMax, marginLeft, marginLeft + chartWidth);
-          const yPos = p.map(renderVal, 0, 1, marginTop + chartHeight, marginTop);
+          const yPos = p.map(val, 0, 1, marginTop + chartHeight, marginTop);
           p.vertex(xPos, yPos);
           lastX = xPos;
           lastY = yPos;
         }
         p.endShape();
 
+        // End point
         if (lastX !== null && lastY !== null) {
-          // endpoint dot for every series
           p.noStroke();
-          p.fill(lineColor);
-          p.circle(lastX, lastY, isFocus ? 4 : 3);
+          p.fill(baseColor);
+          p.circle(lastX, lastY, isFocus ? 6 : 4);
 
+          // Label for focus categories
           if (isFocus) {
-            // halo label for focus categories (Electronics, Chemicals)
             const label = this.prettyName(g);
-            const textW = p.textWidth(label);
-            const textH = p.textAscent() + p.textDescent();
-
-            let labelX = lastX + 8;
-            const maxLabelX = marginLeft + chartWidth - textW - 6;
-            if (labelX > maxLabelX) labelX = maxLabelX;
-
-            const labelY = lastY;
-
+            p.fill(255, 255, 255, 240);
+            p.stroke(baseColor);
+            p.strokeWeight(1);
+            const padding = 8;
+            const textW = p.textWidth(label) + padding * 2;
+            p.rect(lastX + 10, lastY - 10, textW, 20, 4);
+            
             p.noStroke();
-            // p.stroke(0);
-            p.fill(255, 255, 255, 230);
-            p.rect(labelX - 4, labelY - textH / 2 - 2, textW + 8, textH + 4, 3);
-
-            p.fill(40);
-            p.text(label, labelX, labelY + 1);
-          } else if (g === "mineral_fuels" || g === "manufactures") {
-            // subtle label for near-zero or secondary categories so they stay readable
-            const label = this.prettyName(g);
-            p.fill(40);
-            p.textSize(9);
-            let labelX = lastX + 6;
-            const textW = p.textWidth(label);
-            const maxLabelX = marginLeft + chartWidth - textW - 6;
-            if (labelX > maxLabelX) labelX = maxLabelX;
-
-            let labelY = lastY - 8;
-            if (labelY < marginTop + 10) labelY = marginTop + 10;
-
-            p.text(label, labelX, labelY);
+            p.fill(baseColor);
+            p.textAlign(p.LEFT, p.CENTER);
+            p.textSize(12);
+            p.textStyle(p.BOLD);
+            p.text(label, lastX + 10 + padding, lastY);
           }
         }
       }
 
-      // ----- Legends -----
-      drawCategoryLegend(
-        p,
-        colors,
-        this.groups,
-        this.prettyName.bind(this),
-        marginLeft + chartWidth + 12,
-        marginTop
-      );
-      drawTariffLegend(
-        p,
-        marginLeft + chartWidth + 12,
-        marginTop + 170
-      );
-
-      // Footer: data source + method
+      // Legend
+      const legX = marginLeft + chartWidth + 20;
+      const legY = marginTop;
+      
+      p.fill(255, 255, 255, 250);
+      p.stroke(229, 229, 229);
+      p.strokeWeight(1);
+      p.rect(legX, legY, 200, 140, 6);
+      
       p.noStroke();
-      p.fill(40);
-      p.textSize(10);
-      p.textAlign(p.LEFT, p.BOTTOM);
-      // Removed footer text here
-
-      function drawCategoryLegend(p, colors, groups, prettyNameFn, x, y) {
-        const padding = 10;
-        const swatch = 14;
-        const gap = 6;
-        p.textSize(11);
-        const title = "Import categories";
-        const titleH = p.textAscent() + p.textDescent();
-        const lineH = 18;
-        const boxH = padding + titleH + 4 + groups.length * lineH + padding;
-        const boxW = 190;
-
-        p.fill(248);
-        p.stroke(0);
-        p.rect(x, y, boxW, boxH, 6);
-
-        p.noStroke();
-        p.fill(0);
-        p.textAlign(p.LEFT, p.TOP);
-        p.text(title, x + padding, y + padding);
-
-        let cy = y + padding + titleH + 4;
-        for (const g of groups) {
-          p.fill(colors[g] || p.color(0));
-          p.rect(x + padding, cy + 4, swatch, 8);
-          p.fill(40);
-          p.text(prettyNameFn(g), x + padding + swatch + gap, cy + 2);
-          cy += lineH;
-        }
-      }
-
-      function drawTariffLegend(p, x, y) {
-        const padding = 10;
-        const boxW = 190;
-        const boxH = 44;
-
-        p.fill(248);
-        p.stroke(0);
-        p.rect(x, y, boxW, boxH, 6);
-
-        p.noStroke();
-        p.fill(0);
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(11);
-        p.text("Tariff signal", x + padding, y + 4);
-
-        p.fill(255, 235, 235);
-        p.rect(x + padding, y + 20, 28, 10);
-        p.fill(40);
-        p.textSize(10);
-        p.text("Years with average tariff increase", x + padding + 36, y + 18, boxW - padding - 36, 24);
+      p.textAlign(p.LEFT, p.TOP);
+      p.textFont('Inter');
+      p.textSize(13);
+      p.textStyle(p.BOLD);
+      p.fill(26, 26, 26);
+      p.text("Categories", legX + 12, legY + 12);
+      
+      let cy = legY + 38;
+      p.textStyle(p.NORMAL);
+      p.textSize(12);
+      
+      for (const g of this.groups) {
+        p.fill(colors[g] || p.color(100));
+        p.rect(legX + 12, cy, 28, 4, 2);
+        p.fill(26, 26, 26);
+        p.text(this.prettyName(g), legX + 48, cy - 4);
+        cy += 26;
       }
     }
   };
