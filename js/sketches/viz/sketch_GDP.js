@@ -1,5 +1,5 @@
 function preload() {
-  table = loadTable("data/datasets/Improved_Dataset/trade_master_full.csv", "csv", "header");
+  table = loadTable("./data/datasets/Improved_Dataset/trade_master_full.csv", "csv", "header");
 }
 
 let table;
