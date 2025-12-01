@@ -1,5 +1,5 @@
 (function() {
-  let GDPGraph = function(p) {
+  let GDPBar = function(p) {
     // Declare all variables at the top
     let selectedYear = 2023;
     let yearSelect;
@@ -87,5 +87,5 @@
     };
   };
   
-  window.GDPGraph = GDPGraph;
+  window.GDPBar = GDPBar;
 })();
