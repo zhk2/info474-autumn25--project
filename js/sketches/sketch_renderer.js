@@ -47,19 +47,25 @@
                     }
                 }
             }
-
             if (ai === 5) {
                 if (window.sketch_gdp) {
+        // Ensure data is loaded
+                    if (typeof window.sketch_gdp.initData === "function" && !window.sketch_gdp._dataLoaded) {
+                        window.sketch_gdp.initData(p);
+                     }
+
                     if (typeof window.sketch_gdp.setupControls === "function" && !window.sketch_gdp._controlsSetup) {
                         window.sketch_gdp.setupControls(p);
                         window.sketch_gdp._controlsSetup = true;
                     }
+
                     if (typeof window.sketch_gdp.draw === "function") {
                         window.sketch_gdp.draw(p, manager, ai, progress);
                         return;
                     }
                 }
             }
+
             
             if (ai === 6) {
                 if (window.sketch_tariffs_consumers) {
