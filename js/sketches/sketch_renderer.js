@@ -47,24 +47,26 @@
                     }
                 }
             }
-            if (ai === 5) {
-                if (window.sketch_gdp) {
-        // Ensure data is loaded
-                    if (typeof window.sketch_gdp.initData === "function" && !window.sketch_gdp._dataLoaded) {
-                        window.sketch_gdp.initData(p);
-                     }
+            if (ai === 5 && window.sketch_gdp) {
+    // Ensure data is loaded first
+                if (typeof window.sketch_gdp.initData === "function" && !window.sketch_gdp._dataLoaded) {
+                    window.sketch_gdp.initData(p);
+                    return; // stop here, wait for data to load
+                 }
 
-                    if (typeof window.sketch_gdp.setupControls === "function" && !window.sketch_gdp._controlsSetup) {
-                        window.sketch_gdp.setupControls(p);
-                        window.sketch_gdp._controlsSetup = true;
-                    }
+    // Ensure controls are set up
+                if (typeof window.sketch_gdp.setupControls === "function" && !window.sketch_gdp._controlsSetup) {
+                    window.sketch_gdp.setupControls(p);
+                    return; // stop here, wait for next draw
+                }
 
-                    if (typeof window.sketch_gdp.draw === "function") {
-                        window.sketch_gdp.draw(p, manager, ai, progress);
-                        return;
-                    }
+    // Only draw if both data and controls are ready
+                if (typeof window.sketch_gdp.draw === "function") {
+                    window.sketch_gdp.draw(p, manager, ai, progress);
+                    return;
                 }
             }
+
 
             
             if (ai === 6) {
