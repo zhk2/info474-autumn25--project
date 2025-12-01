@@ -43,13 +43,12 @@
           this.dataMap[country][year] = {
             total_imports_country: Number(row.get("total_imports_country")) || 0,
             total_exports_country: Number(row.get("total_exports_country")) || 0,
-            tariff_prev_year: Number(row.get("tariff_prev_year")) || 0,
-            tariff_change_value: Number(row.get("tariff_change_value")) || 0,
-            tariff_change_direction: row.get("tariff_change_direction") || "unknown",
+            yoy_trade_balance: Number(row.get("yoy_trade_balance")) || 0,
           };
         } else {
           this.dataMap[country][year].total_imports_country += Number(row.get("total_imports_country")) || 0;
           this.dataMap[country][year].total_exports_country += Number(row.get("total_exports_country")) || 0;
+          this.dataMap[country][year].yoy_trade_balance += Number(row.get("yoy_trade_balance")) || 0;
         }
 
         if (!this.countries.includes(country)) this.countries.push(country);
@@ -105,18 +104,19 @@
         return;
       }
 
-      let before = this.dataMap[country]?.[2022] || { total_imports_country: 0, total_exports_country: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
-      let after = this.dataMap[country]?.[2024] || { total_imports_country: 0, total_exports_country: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
+      let before = this.dataMap[country]?.[2022] || { total_imports_country: 0, total_exports_country: 0, yoy_trade_balance: 0 };
+      let after = this.dataMap[country]?.[2024] || { total_imports_country: 0, total_exports_country: 0, yoy_trade_balance: 0 };
 
       before.total_imports_country = Number(before.total_imports_country) || 0;
       before.total_exports_country = Number(before.total_exports_country) || 0;
-      before.tariff_prev_year = Number(before.tariff_prev_year) || 0;
+      before.yoy_trade_balance = Number(before.yoy_trade_balance) || 0;
 
       after.total_imports_country = Number(after.total_imports_country) || 0;
       after.total_exports_country = Number(after.total_exports_country) || 0;
-      after.tariff_prev_year = Number(after.tariff_prev_year) || 0;
+      after.yoy_trade_balance = Number(after.yoy_trade_balance) || 0;
 
-      if (before.total_imports_country + before.total_exports_country === 0 && after.total_imports_country + after.total_exports_country === 0) {
+      if (before.total_imports_country + before.total_exports_country === 0 &&
+          after.total_imports_country + after.total_exports_country === 0) {
         p.text("No trade data available for this country", p.width / 2, p.height / 2);
         return;
       }
@@ -124,24 +124,26 @@
       p.textAlign(p.CENTER);
       p.text(`Imports and Exports of ${country} Before and After Tariff`, p.width / 2, 30);
 
-      // --- Legend ---
+      // --- Legend (spaced out) ---
       const legendX = 50;
       const legendY = 60;
+      const spacing = 140; // increased spacing
 
       p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
       p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("Imports", legendX + 20, legendY + 7.5);
 
-      p.fill("#F57A00"); p.rect(legendX + 100, legendY, 15, 15);
-      p.fill(0); p.text("Exports", legendX + 120, legendY + 7.5);
+      p.fill("#F57A00"); p.rect(legendX + spacing, legendY, 15, 15);
+      p.fill(0); p.text("Exports", legendX + spacing + 20, legendY + 7.5);
 
-      p.fill("#5DD548"); p.rect(legendX + 220, legendY, 15, 15);
-      p.fill(0); p.text("Tariff ↑", legendX + 240, legendY + 7.5);
+      p.fill("#5DD548"); p.rect(legendX + spacing*2, legendY, 15, 15);
+      p.fill(0); p.text("Trade Balance ↑", legendX + spacing*2 + 20, legendY + 7.5);
 
-      p.fill("#FC3640"); p.rect(legendX + 320, legendY, 15, 15);
-      p.fill(0); p.text("Tariff ↓", legendX + 340, legendY + 7.5);
+      p.fill("#FC3640"); p.rect(legendX + spacing*3, legendY, 15, 15);
+      p.fill(0); p.text("Trade Balance ↓", legendX + spacing*3 + 20, legendY + 7.5);
 
       // --- Bars ---
-      let maxVal = Math.max(before.total_imports_country + before.total_exports_country, after.total_imports_country + after.total_exports_country);
+      let maxVal = Math.max(before.total_imports_country + before.total_exports_country,
+                            after.total_imports_country + after.total_exports_country);
       let barWidth = 50;
       let gap = 10;
       let bars = [];
@@ -159,9 +161,11 @@
       p.rect(xBefore + gap/2, p.height - 80 - hExpBefore, barWidth, hExpBefore);
       bars.push({ x: xBefore + gap/2, y: p.height - 80 - hExpBefore, w: barWidth, h: hExpBefore, label: `Exports: ${before.total_exports_country}` });
 
-      p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
+      // Trade balance color and rounded to 1 decimal
+      const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
+      p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
-      p.text(`Tariff: ${before.tariff_prev_year}%`, xBefore, p.height - 320);
+      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 320);
       p.fill(0);
       p.text("Before Tariff (2022)", xBefore, p.height - 40);
 
@@ -178,8 +182,9 @@
       p.rect(xAfter + gap/2, p.height - 80 - hExpAfter, barWidth, hExpAfter);
       bars.push({ x: xAfter + gap/2, y: p.height - 80 - hExpAfter, w: barWidth, h: hExpAfter, label: `Exports: ${after.total_exports_country}` });
 
-      p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
-      p.text(`Tariff: ${after.tariff_prev_year}%`, xAfter, p.height - 320);
+      const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
+      p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
+      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 320);
       p.fill(0);
       p.text("After Tariff (2024)", xAfter, p.height - 40);
 
@@ -199,6 +204,8 @@
     },
   };
 })();
+
+
 
 
 
