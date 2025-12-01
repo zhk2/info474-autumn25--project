@@ -1,7 +1,5 @@
-// sketch_trade_tariff.js
-// p5.js visualization: Imports & Exports Before (2022) vs After (2024) Tariff
 // sketch_tariff.js
-// p5.js visualization: Imports & Exports Before (2022) vs After (2024) Tariff
+// Aggregated country-level imports/exports before and after tariff
 
 (function () {
   window.sketch_tariff = {
@@ -10,43 +8,47 @@
     countries: [],
     dataMap: {},
     _controlsSetup: false,
-    _dataInitialized: false,
 
     initData(p) {
-      // Load table once
       this.table = p.loadTable(
         "data/datasets/Improved_Dataset/trade_master_full.csv",
         "csv",
         "header",
-        (table) => {
-          this.processData(table);
-        }
+        (table) => this.processData(table)
       );
     },
 
     processData(table) {
-      this.countries = [];
       this.dataMap = {};
+      this.countries = [];
 
       for (let r = 0; r < table.getRowCount(); r++) {
         let row = table.getRow(r);
         let country = row.getString("country_name");
         let year = row.getNum("year");
 
+        // Only need 2022 and 2024
         if (year !== 2022 && year !== 2024) continue;
 
+        // Initialize country object
         if (!this.dataMap[country]) this.dataMap[country] = {};
+        if (!this.dataMap[country][year]) {
+          this.dataMap[country][year] = {
+            import_value: 0,
+            export_value: 0,
+            tariff_prev_year: row.getNum("tariff_prev_year"),
+            tariff_change_value: row.getNum("tariff_change_value"),
+            tariff_change_direction: row.getString("tariff_change_direction")
+          };
+        }
 
-        this.dataMap[country][year] = {
-          import_value: row.getNum("import_value"),
-          export_value: row.getNum("export_value"),
-          gdp: row.getNum("gdp_usd"),
-          tariff_prev: row.getNum("tariff_prev_year"),
-          tariff_change: row.getNum("tariff_change_value"),
-          direction: row.getString("tariff_change_direction"),
-        };
+        // Aggregate by summing imports/exports across commodities
+        this.dataMap[country][year].import_value += row.getNum("import_value");
+        this.dataMap[country][year].export_value += row.getNum("export_value");
 
-        if (!this.countries.includes(country)) this.countries.push(country);
+        if (!this.countries.includes(country)) {
+          this.countries.push(country);
+        }
       }
 
       this.countries.sort();
@@ -56,14 +58,13 @@
       if (this._controlsSetup) return;
 
       // Canvas
-      this.cnv = p.createCanvas(900, 500);
-      this.cnv.parent("vis");
+      this.canvas = p.createCanvas(900, 500);
+      this.canvas.parent("vis");
 
       // Dropdown
       this.dropdown = p.createSelect();
       this.dropdown.parent("vis");
       this.dropdown.style("width", "250px");
-
       this.dropdown.option("-- Select a Country --");
       for (let c of this.countries) this.dropdown.option(c);
 
@@ -75,8 +76,8 @@
 
     draw(p) {
       p.background(255);
-      p.fill(0);
       p.textSize(18);
+      p.fill(0);
 
       if (!this.dropdown) {
         p.text("Loading trade data...", 20, 40);
@@ -93,7 +94,7 @@
       let after = this.dataMap[country]?.[2024];
 
       if (!before || !after) {
-        p.text("Data for 2022 and 2024 is incomplete.", 20, 40);
+        p.text("Missing 2022 or 2024 data.", 20, 40);
         return;
       }
 
@@ -109,9 +110,9 @@
         after.import_value + after.export_value
       );
 
-      let barWidth = 120;
+      let barWidth = 130;
 
-      // BEFORE tariff (2022)
+      // BEFORE (2022)
       let x1 = p.width / 3;
 
       let hImp1 = p.map(before.import_value, 0, maxVal, 0, 250);
@@ -121,20 +122,15 @@
       p.rect(x1 - barWidth / 2, p.height - 80 - hImp1, barWidth, hImp1);
 
       p.fill("#F57A00");
-      p.rect(
-        x1 - barWidth / 2,
-        p.height - 80 - hImp1 - hExp1,
-        barWidth,
-        hExp1
-      );
+      p.rect(x1 - barWidth / 2, p.height - 80 - hImp1 - hExp1, barWidth, hExp1);
 
       p.fill(0);
       p.text("Before Tariff (2022)", x1, p.height - 40);
 
-      p.fill(before.direction === "increase" ? "#5DD548" : "#FC3640");
-      p.text(`Tariff: ${before.tariff_prev}%`, x1, p.height - 320);
+      p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
+      p.text(`Tariff: ${before.tariff_prev_year}%`, x1, p.height - 320);
 
-      // AFTER tariff (2024)
+      // AFTER (2024)
       let x2 = (2 * p.width) / 3;
 
       let hImp2 = p.map(after.import_value, 0, maxVal, 0, 250);
@@ -144,19 +140,15 @@
       p.rect(x2 - barWidth / 2, p.height - 80 - hImp2, barWidth, hImp2);
 
       p.fill("#F57A00");
-      p.rect(
-        x2 - barWidth / 2,
-        p.height - 80 - hImp2 - hExp2,
-        barWidth,
-        hExp2
-      );
+      p.rect(x2 - barWidth / 2, p.height - 80 - hImp2 - hExp2, barWidth, hExp2);
 
       p.fill(0);
       p.text("After Tariff (2024)", x2, p.height - 40);
 
-      p.fill(after.direction === "increase" ? "#5DD548" : "#FC3640");
-      p.text(`Tariff: ${after.tariff_prev}%`, x2, p.height - 320);
+      p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
+      p.text(`Tariff: ${after.tariff_prev_year}%`, x2, p.height - 320);
     },
   };
 })();
+
 
