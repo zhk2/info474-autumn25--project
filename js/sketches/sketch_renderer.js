@@ -85,7 +85,7 @@
 
             if (ai === 7) {
                 if (window.sketch_global_trade_forecast) {
-                    if (typeof window.sketch_global_trade_forecast === "function" && !window.sketch_global_trade_forecast) {
+                    if (typeof window.sketch_global_trade_forecast.setupControls === "function" && !window.sketch_global_trade_forecast._controlsSetup) {
                         window.sketch_global_trade_forecast.setupControls(p);
                         window.sketch_global_trade_forecast._controlsSetup = true;
                     }

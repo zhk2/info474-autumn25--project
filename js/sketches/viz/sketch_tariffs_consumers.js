@@ -362,7 +362,7 @@
 
       // Legend
       const legX = marginLeft + chartWidth + 20;
-      const legY = marginTop + 40;
+      const legY = marginTop + 30;
       
       p.fill(255, 255, 255, 250);
       p.stroke(229, 229, 229);

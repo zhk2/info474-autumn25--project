@@ -44,7 +44,8 @@
 
         // Start p5 sketch with retries if startP5 isn't defined yet.
         (function callStartP5WithRetry(attempts) {
-            attempts = typeof attempts === 'number' ? attempts : 3;
+            // Be generous with retries to avoid race conditions with script loading
+            attempts = typeof attempts === 'number' ? attempts : 20;
             if (typeof startP5 === 'function') {
                 try {
                     console.log('sections: calling startP5 (attempts left)', attempts);
@@ -142,7 +143,7 @@
             } else {
                 console.error('sections: startP5 not available after retries — p5 visual will not start');
             }
-        })(3);
+        })(20);
     }
 
     // run on DOM ready
