@@ -155,10 +155,10 @@
       let lx = 900;
       let ly = 60;
       for (let i = 0; i < sectors.length; i++) {
-        fill(colors[i]);
-        rect(lx, ly, 15, 15);
-        fill(0);
-        text(sectors[i], lx + 20, ly + 12);
+        p.fill(colors[i]);
+        p.rect(lx, ly, 15, 15);
+        p.fill(0);
+        p.text(sectors[i], lx + 20, ly + 12);
         ly += 20;
       }
     }
