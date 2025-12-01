@@ -59,7 +59,6 @@
     setupControls(p) {
       if (this._controlsSetup || !this._dataLoaded) return;
 
-      // FIXED: link to active index 5
       this.sectionEl = document.querySelector('section[data-active-index="5"]');
       if (!this.sectionEl) {
         console.error("❌ Section 5 not found");
@@ -82,7 +81,6 @@
 
     draw(p) {
       if (!this._controlsSetup || !this._dataLoaded) return;
-
       if (!this.sectionEl) return;
 
       const sectionVisible = this.sectionEl.getBoundingClientRect().top < window.innerHeight &&
@@ -110,7 +108,6 @@
 
       before.gdp_usd = Number(before.gdp_usd) || 0;
       before.yoy_trade_balance = Number(before.yoy_trade_balance) || 0;
-
       after.gdp_usd = Number(after.gdp_usd) || 0;
       after.yoy_trade_balance = Number(after.yoy_trade_balance) || 0;
 
@@ -122,7 +119,7 @@
       p.textAlign(p.CENTER);
       p.text(`GDP of ${country} Before and After Tariff`, p.width / 2, 30);
 
-      // --- Legend (spaced out) ---
+      // --- Legend ---
       const legendX = 50;
       const legendY = 60;
       const spacing = 250;
@@ -139,28 +136,30 @@
       // --- Bars ---
       let maxVal = Math.max(before.gdp_usd, after.gdp_usd);
       let barWidth = 50;
-      let gap = 10;
+      let minBarHeight = 10; // Ensure small values are visible
       let bars = [];
 
       // BEFORE 2022
       let xBefore = p.width / 3;
       let hGDPBefore = p.map(before.gdp_usd, 0, maxVal, 0, 250);
+      if (hGDPBefore < minBarHeight && before.gdp_usd > 0) hGDPBefore = minBarHeight;
 
       p.fill("#113EA7");
       p.rect(xBefore - barWidth/2, p.height - 80 - hGDPBefore, barWidth, hGDPBefore);
       bars.push({ x: xBefore - barWidth/2, y: p.height - 80 - hGDPBefore, w: barWidth, h: hGDPBefore, label: `GDP: ${before.gdp_usd}` });
 
-      // Trade balance color and rounded to 1 decimal
+      // Trade balance above bar
       const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
       p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
-      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 300);
+      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
       p.fill(0);
       p.text("Before Tariff (2022)", xBefore, p.height - 40);
 
       // AFTER 2024
       let xAfter = (2 * p.width) / 3;
       let hGDPAftr = p.map(after.gdp_usd, 0, maxVal, 0, 250);
+      if (hGDPAftr < minBarHeight && after.gdp_usd > 0) hGDPAftr = minBarHeight;
 
       p.fill("#113EA7");
       p.rect(xAfter - barWidth/2, p.height - 80 - hGDPAftr, barWidth, hGDPAftr);
@@ -168,7 +167,7 @@
 
       const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
       p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
-      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 320);
+      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 80 - hGDPAftr - 15);
       p.fill(0);
       p.text("After Tariff (2024)", xAfter, p.height - 40);
 
@@ -188,6 +187,7 @@
     },
   };
 })();
+
 
 
 
