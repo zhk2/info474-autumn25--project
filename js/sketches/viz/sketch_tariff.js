@@ -10,7 +10,6 @@
     sectionEl: null, // container section
 
     initData(p) {
-      // Load CSV asynchronously
       p.loadTable(
         "data/datasets/Improved_Dataset/trade_master_full.csv",
         "csv",
@@ -110,7 +109,6 @@
         return;
       }
 
-      // Get data safely
       let before = this.dataMap[country]?.[2022] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
       let after = this.dataMap[country]?.[2024] || { import_value: 0, export_value: 0, tariff_prev_year: 0, tariff_change_direction: "unknown" };
 
@@ -122,14 +120,11 @@
       after.export_value = Number(after.export_value) || 0;
       after.tariff_prev_year = Number(after.tariff_prev_year) || 0;
 
-      // Skip if all zeros
       if (before.import_value + before.export_value === 0 && after.import_value + after.export_value === 0) {
-        console.warn("No trade data available for", country);
         p.text("No trade data available for this country", p.width / 2, p.height / 2);
         return;
       }
 
-      // --- Title ---
       p.textAlign(p.CENTER);
       p.text(`Imports and Exports of ${country} Before and After Tariff`, p.width / 2, 30);
 
@@ -138,34 +133,25 @@
       const legendY = 60;
       const legendSpacing = 20;
 
-      // Imports
-      p.fill("#113EA7");
-      p.rect(legendX, legendY, 15, 15);
-      p.fill(0);
-      p.textAlign(p.LEFT, p.CENTER);
-      p.text("Imports", legendX + 20, legendY + 7.5);
+      p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
+      p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("Imports", legendX + 20, legendY + 7.5);
 
-      // Exports
-      p.fill("#F57A00");
-      p.rect(legendX + 100, legendY, 15, 15);
-      p.fill(0);
-      p.text("Exports", legendX + 120, legendY + 7.5);
+      p.fill("#F57A00"); p.rect(legendX + 100, legendY, 15, 15);
+      p.fill(0); p.text("Exports", legendX + 120, legendY + 7.5);
 
-      // Tariff Increase/Decrease
-      p.fill("#5DD548");
-      p.rect(legendX + 220, legendY, 15, 15);
-      p.fill(0);
-      p.text("Tariff ↑", legendX + 240, legendY + 7.5);
+      p.fill("#5DD548"); p.rect(legendX + 220, legendY, 15, 15);
+      p.fill(0); p.text("Tariff ↑", legendX + 240, legendY + 7.5);
 
-      p.fill("#FC3640");
-      p.rect(legendX + 320, legendY, 15, 15);
-      p.fill(0);
-      p.text("Tariff ↓", legendX + 340, legendY + 7.5);
+      p.fill("#FC3640"); p.rect(legendX + 320, legendY, 15, 15);
+      p.fill(0); p.text("Tariff ↓", legendX + 340, legendY + 7.5);
 
       // --- Bars ---
       let maxVal = Math.max(before.import_value + before.export_value, after.import_value + after.export_value);
       let barWidth = 50;
       let gap = 10;
+
+      // Store bar positions for hover
+      let bars = [];
 
       // BEFORE 2022
       let xBefore = p.width / 3;
@@ -174,9 +160,11 @@
 
       p.fill("#113EA7");
       p.rect(xBefore - barWidth - gap/2, p.height - 80 - hImpBefore, barWidth, hImpBefore);
+      bars.push({ x: xBefore - barWidth - gap/2, y: p.height - 80 - hImpBefore, w: barWidth, h: hImpBefore, label: `Imports: ${before.import_value}` });
 
       p.fill("#F57A00");
       p.rect(xBefore + gap/2, p.height - 80 - hExpBefore, barWidth, hExpBefore);
+      bars.push({ x: xBefore + gap/2, y: p.height - 80 - hExpBefore, w: barWidth, h: hExpBefore, label: `Exports: ${before.export_value}` });
 
       p.fill(before.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
@@ -191,17 +179,34 @@
 
       p.fill("#113EA7");
       p.rect(xAfter - barWidth - gap/2, p.height - 80 - hImpAfter, barWidth, hImpAfter);
+      bars.push({ x: xAfter - barWidth - gap/2, y: p.height - 80 - hImpAfter, w: barWidth, h: hImpAfter, label: `Imports: ${after.import_value}` });
 
       p.fill("#F57A00");
       p.rect(xAfter + gap/2, p.height - 80 - hExpAfter, barWidth, hExpAfter);
+      bars.push({ x: xAfter + gap/2, y: p.height - 80 - hExpAfter, w: barWidth, h: hExpAfter, label: `Exports: ${after.export_value}` });
 
       p.fill(after.tariff_change_direction === "increase" ? "#5DD548" : "#FC3640");
       p.text(`Tariff: ${after.tariff_prev_year}%`, xAfter, p.height - 320);
       p.fill(0);
       p.text("After Tariff (2024)", xAfter, p.height - 40);
+
+      // --- Hover tooltips ---
+      bars.forEach((b) => {
+        if (p.mouseX > b.x && p.mouseX < b.x + b.w &&
+            p.mouseY > b.y && p.mouseY < b.y + b.h) {
+          p.fill(255, 255, 200);
+          p.stroke(0);
+          p.rect(p.mouseX + 10, p.mouseY - 20, p.textWidth(b.label) + 10, 20);
+          p.noStroke();
+          p.fill(0);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text(b.label, p.mouseX + 15, p.mouseY - 10);
+        }
+      });
     },
   };
 })();
+
 
 
 
