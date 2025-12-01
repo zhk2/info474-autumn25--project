@@ -6,7 +6,7 @@
     data: [],
     countries: [],
     selectedCountry: null,
-    canvas: null,
+    dropdown: null,
     statusMessage: "Loading trade data…",
 
     initData: function (p) {
@@ -20,6 +20,7 @@
         () => {
           console.log("CSV loaded successfully!");
           this.processData();
+          this.populateDropdown();
           this._dataInitialized = true;
         },
         (err) => {
@@ -60,30 +61,38 @@
 
       const container = document.getElementById("vis");
       if (!container) return;
-      container.innerHTML = "";
 
-      // Dropdown
-      const dropdown = document.createElement("select");
-      dropdown.className = "form-select";
-      dropdown.style.width = "240px";
-      dropdown.style.marginBottom = "10px";
+      // Dropdown (do not wipe the canvas the manager created)
+      if (!this.dropdown) {
+        const dropdown = document.createElement("select");
+        dropdown.className = "form-select";
+        dropdown.style.width = "240px";
+        dropdown.style.marginBottom = "10px";
+        dropdown.onchange = () => {
+          this.selectedCountry = dropdown.value;
+        };
+        this.dropdown = dropdown;
+        container.appendChild(dropdown);
+      }
 
+      this.populateDropdown();
+    },
+
+    populateDropdown: function () {
+      if (!this.dropdown) return;
+      this.dropdown.innerHTML = "";
       this.countries.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c;
         opt.textContent = c;
-        dropdown.appendChild(opt);
+        this.dropdown.appendChild(opt);
       });
-
-      dropdown.onchange = () => {
-        this.selectedCountry = dropdown.value;
-        console.log("Selected country:", this.selectedCountry);
-      };
-      container.appendChild(dropdown);
-
-      // Canvas
-      this.canvas = p.createCanvas(900, 400);
-      this.canvas.parent("vis");
+      if (this.selectedCountry) {
+        this.dropdown.value = this.selectedCountry;
+      } else if (this.countries.length) {
+        this.dropdown.value = this.countries[0];
+        this.selectedCountry = this.countries[0];
+      }
     },
 
     draw: function (p) {
