@@ -166,6 +166,10 @@
       const legendX = 50;
       const legendY = 60;
       const spacing = 200; // increased spacing
+      
+      p.textFont('Inter');
+      p.textSize(16);
+      p.textStyle(p.NORMAL);
 
       p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
       p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("Imports", legendX + 20, legendY + 7.5);
