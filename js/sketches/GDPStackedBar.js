@@ -295,6 +295,9 @@
     p.setup = function() {
       const canvas = p.createCanvas(1200, 600);
       canvas.parent("viz-container-3");
+      canvas.style("position", "relative");
+      canvas.style("display", "block");
+      canvas.style("margin", "0 auto");
       
       p.setupControls();
     };
