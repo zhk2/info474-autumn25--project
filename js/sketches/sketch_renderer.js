@@ -21,9 +21,31 @@
                 console.log('Renderer: delegating draw, ai=', ai); 
             } catch (e) { }
 
+            
+
             if (ai === 0 || ai === 1) {
                 window.VizTitle.draw(p, manager, ai, progress);
                 return;
+            }
+            if (ai === 2 && window.sketch_trademap) {
+                if (typeof window.sketch_trademap.setupControls === "function" && !window.sketch_trademap._controlsSetup) {
+                    window.sketch_trademap.setupControls(p);
+                    window.sketch_trademap._controlsSetup = true;
+                }
+                if (typeof window.sketch_trademap.draw === "function") {
+                    window.sketch_trademap.draw(p, manager, ai, progress);
+                    return;
+                }
+            }
+            if (ai === 3 && window.sketch_stackedbar) {
+                if (typeof window.sketch_stackedbar.setupControls === "function" && !window.sketch_stackedbar._controlsSetup) {
+                    window.sketch_stackedbar.setupControls(p);
+                    window.sketch_stackedbar._controlsSetup = true;
+                }
+                if (typeof window.sketch_stackedbar.draw === "function") {
+                    window.sketch_stackedbar.draw(p, manager, ai, progress);
+                    return;
+                }
             }
             if (ai === 4) {
                 if (window.sketch_tariff) {

@@ -64,8 +64,20 @@
             self.onProgress(sectionIndex, progress);
         };
 
-        window.addEventListener('resize', this.resize);
-        window.addEventListener('scroll', this.position);
+        // throttle scroll/resize via rAF to smooth rendering
+        var ticking = false;
+        function requestTick(fn) {
+            if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(function () {
+                    ticking = false;
+                    fn();
+                });
+            }
+        }
+
+        window.addEventListener('resize', function () { requestTick(self.resize); });
+        window.addEventListener('scroll', function () { requestTick(self.position); }, { passive: true });
         setTimeout(function () { self.resize(); self.position(); }, 50);
     }
 
