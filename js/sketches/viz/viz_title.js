@@ -99,7 +99,6 @@
                 p.textSize(18);
                 
                 const items = [
-                    'What is Trade?',
                     'Introduction to Tariffs',
                     'Tariff Percentages by Country',
                     'GDP Impact Analysis',
