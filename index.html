@@ -38,13 +38,13 @@
           </ul>
         </section>
         
-        <section class="step" data-active-index="2">
+        <section class="step" data-active-index="3">
           <div class="title">Understanding Tariffs</div>
           <p>A tariff is a tax imposed by one country on goods and services imported from another country. Tariffs serve multiple strategic purposes: protecting domestic industries from foreign competition, generating government revenue, and addressing trade imbalances.</p>
           <p>The US trade policy from 2018-2024 marked a significant shift toward protectionism, with tariffs imposed on hundreds of billions of dollars worth of goods.</p>
         </section>
         
-        <section class="step" data-active-index="3">
+        <section class="step" data-active-index="2">
           <div class="title">Tariffs by Country</div>
           <p>Different countries face vastly different tariff rates from the United States. Select a country on the right to see how import-export dynamics and tariff rates have evolved over time.</p>
           <p>The visualization shows three key metrics: import values (blue), export values (orange), and tariff rates (red bars). Notice how tariff changes often correlate with shifts in trade volume.</p>
@@ -97,11 +97,15 @@
   <!-- sketches (example renderer) -->
   <script src="js/sketches/examples/sketch_grid.js"></script>
 
+  <!-- country polygons for trade map -->
+  <script src="data/datasets/gunner/country.js"></script>
+
   <!-- sketches (renderers): UPDATE HERE FOR PROJECT -->
   <script src="js/sketches/viz/viz_title.js"></script>
+  <script src="js/sketches/viz/sketch_trademap.js"></script>
   <script src="js/sketches/viz/sketch_tariff.js"></script>
    <script src="js/sketches/viz/sketch_GDP.js"></script>
-  <script src="js/sketches/viz/viz_bar.js"></script>
+  <script src="js/sketches/viz/viz_stackedbar.js"></script>
    <script src="js/sketches/viz/sketch_tariffs_consumers.js"></script>
    <script src="js/sketches/viz/sketch_global_trade_forecast.js"></script>
   <script src="js/sketches/sketch_renderer.js"></script>
