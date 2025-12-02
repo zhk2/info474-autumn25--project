@@ -153,6 +153,7 @@
             } else {
                 console.error("country' array not found. Make sure country.js is loaded first.");
             }
+            p.textFont('serif');
         };
         
         p.draw = function() {
