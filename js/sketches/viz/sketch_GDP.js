@@ -134,6 +134,7 @@
 
       let country = this.dropdown.value();
       if (!country || country === "-- Select a Country --") {
+        p.fill(0);
         p.textAlign(p.LEFT, p.TOP);
         p.text("Select a country to view data", 20, 40);
         return;
@@ -152,7 +153,12 @@
         p.text("No GDP data available for this country", p.width / 2, p.height / 2);
         return;
       }
-
+      
+      // title
+      p.textFont('Spectral');
+      p.textSize(20);
+      p.textStyle(p.BOLD);
+      p.fill(0);
       p.textAlign(p.CENTER);
       p.text(`GDP of ${country} Before and After Tariff`, p.width / 2, 30);
 
