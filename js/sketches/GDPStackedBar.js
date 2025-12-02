@@ -111,12 +111,7 @@
     };
     
     p.draw = function() {
-      p.background(255);
-      p.fill(0);
-      p.textSize(18);
-      p.textAlign(p.CENTER);
-      var title = showing.charAt(0).toUpperCase() + showing.slice(1);
-      p.text("Top 8 Countries by " + title + " (" + selectedYear + ")", p.width / 2, 50);
+      p.background("#fafafa");
     
       if (top8data.length === 0) return;
     

@@ -92,7 +92,7 @@
       p.setup = function() {
         // Create canvas
         canvas = p.createCanvas(900, 500);
-        canvas.parent('viz-container-6');
+        canvas.parent('viz-container-4');
   
         // Create dropdown
         dropdown = p.createSelect();

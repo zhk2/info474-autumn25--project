@@ -116,7 +116,7 @@
         p.getTop10Data(); 
       });
 
-      canvas.parent('viz-container-1');
+      canvas.parent('viz-container-2');
     }
 
     p.draw = function() {

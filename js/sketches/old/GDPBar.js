@@ -1,3 +1,5 @@
+// Deprecated
+
 (function() {
   let GDPBar = function(p) {
     // Declare all variables at the top
@@ -29,7 +31,7 @@
         selectedYear = p.int(yearSelect.value());
       });
 
-      canvas.parent('viz-container-2'); // or whatever container you want
+      canvas.parent('viz-container-0'); // or whatever container you want
     };
     
     p.draw = function() {
