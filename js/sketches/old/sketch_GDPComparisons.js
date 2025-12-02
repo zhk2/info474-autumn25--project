@@ -45,11 +45,11 @@
         var setupControls = function() {
             if (controlsSetup || !dataLoaded) return;
 
-            canvas = p.createCanvas(900, 500);
-            canvas.parent('viz-container-4');
+            canvas = p.createCanvas(900, 200);
+            canvas.parent('viz-container-x');
 
             dropdown = p.createSelect();
-            dropdown.parent('viz-container-4');
+            dropdown.parent('viz-container-x');
             dropdown.option("-- Select a Country --");
             countries.forEach((c) => dropdown.option(c));
             dropdown.changed(() => p.redraw());

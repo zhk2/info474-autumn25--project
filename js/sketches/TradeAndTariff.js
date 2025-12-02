@@ -92,12 +92,12 @@
       p.setup = function() {
         // Create canvas
         canvas = p.createCanvas(900, 500);
-        canvas.parent('viz-container-4');
+        canvas.parent('viz-container-x');
   
         // Create dropdown
         dropdown = p.createSelect();
         dropdown.option("-- Select a Country --");
-        dropdown.parent('viz-container-6');
+        dropdown.parent('viz-container-x');
         dropdown.addClass("form-select");
         dropdown.style("width", "260px");
         dropdown.style("margin-bottom", "16px");

@@ -42,10 +42,10 @@
             if (controlsSetup || !dataLoaded) return;
 
             canvas = p.createCanvas(900, 500);
-            canvas.parent('viz-container-4');
+            canvas.parent('viz-container-5');
 
             dropdown = p.createSelect();
-            dropdown.parent('viz-container-4');
+            dropdown.parent('viz-container-5');
             dropdown.option("-- Select a Country --");
             countries.forEach((c) => dropdown.option(c));
             dropdown.changed(() => p.redraw());

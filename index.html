@@ -51,7 +51,7 @@
       </p>
     </section>
 
-    <!-- Viz Section Template -->
+    <!-- Viz 1 -->
     <section class="mt-20 space-y-6">
       <h1 class="text-3xl font-bold tracking-tight">How Different Countries Trade</h1>
       <p class="text-lg leading-relaxed">
@@ -69,8 +69,8 @@
   <h3 class="text-center text-xl font-bold">Amount of goods (total) imported from one country to another for the year 2024.</h3>  
   <div id="viz-container-1" class="px-24"></div>
   <h3 class="text-center text-m">Data from United Nations.</h3>  
+  <!-- Viz 2 -->
   <div class="max-w-4xl mx-auto px-6 py-12">
-    <!-- Viz 2 -->
     <section class="mt-20 space-y-6">
       <h1 class="text-3xl font-bold tracking-tight">The Key Players</h1>
       <p class="text-lg leading-relaxed">
@@ -83,49 +83,61 @@
   <div id="viz-container-3" class="px-24"></div>
   <h3 class="text-center text-m">Data from United Nations.</h3>  
   <div class="max-w-4xl mx-auto px-6 py-12">
-    <!-- EnD -->
+    <!-- Viz 3 -->
     <section class="space-y-6">
-      <h1 class="text-3xl font-bold tracking-tight">Viz 2: The Key Players</h1>
+      <h1 class="text-3xl font-bold tracking-tight"></h1>
       <p class="text-lg leading-relaxed">
-        
+
       </p>
-      <div id="viz-container-3"></div>
+      <div id="viz-container-9"></div>
     </section>
 
     <!-- Viz 3 -->
     <section class="mt-24 space-y-6">
-      <h1 class="text-3xl font-bold tracking-tight">Viz 3</h1>
+      <h1 class="text-3xl font-bold tracking-tight">The Impact of Tariffs</h1>
+      <p>
+        Looking across partners, a single rule does not explain every line in the chart. Higher tariffs often line up with softer import growth, but there are clear exceptions. Some countries appear to re-route supply chains or shift what they sell rather than simply losing access to the United States market.
+      </p>
       <div id="viz-container-4" class="w-full mx-auto" style=""></div>
-    </section>
-
-    <!-- Viz 4 -->
-    <section class="mt-24 space-y-6">
-      <h1 class="text-3xl font-bold tracking-tight">Viz 4</h1>
-      <div id="viz-container-5" class="w-full mx-auto" style=""></div>
+      <p> 
+        These patterns remind us that tariffs are part of a longer negotiation. Firms can change suppliers, governments can sign new agreements, and demand can move to different goods. The visualizations on the right capture that tug-of-war in the data rather than a neat “before and after.”        
+      </p>
     </section>
 
     <!-- Viz 5 -->
     <section class="mt-24 space-y-6">
-      <h1 class="text-3xl font-bold tracking-tight">Viz 5</h1>
+      <h1 class="text-3xl font-bold tracking-tight">How Tariffs Impact Countries</h1>
       <div id="viz-container-5" class="w-full mx-auto" style=""></div>
     </section>
 
     <!-- Viz 6 -->
     <section class="mt-24 space-y-6 mb-20">
-      <h1 class="text-3xl font-bold tracking-tight">Viz 6</h1>
-      <p class="text-lg leading-relaxed">Nothing here yet</p>
+      <h1 class="text-3xl font-bold tracking-tight">Looking into the Future</h1>
+      <p class="text-lg leading-relaxed">
+        The final view pulls back from individual countries and goods to look at the 
+        rhythm of the past decade. We compare three periods in the recent trade story: 
+        the years before the conflict intensified, the peak of tariff battles, and the more 
+        recent period where tensions cooled but never fully disappeared.
+      </p>
+      <p class="text-lg leading-relaxed"></p>
+        Each point combines how aggressive tariff changes were with how volatile global trade became from year to year. The 2018–2020 period stands out with both higher tariff tension and larger swings in trade. The earlier and later periods cluster closer together with lower volatility, even though tariffs never fully return to their old baseline.
+      </p>
+      <p class="text-lg leading-relaxed"></p>
+        This pattern suggests that trade policy shocks leave a clear imprint but do not lock the system into permanent crisis. As you reach the end of the story, the open question is what the next shock will look like and which countries and sectors will be ready for it when it comes.
+      </p>
     </section>
+    <div id="viz-container-6" class="w-full mx-auto" style=""></div>
     
   </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
   <script src="js/sketches/GDPStackedBar.js"></script>
-  <script src="js/sketches/TariffGraph.js"></script>
+  <!-- <script src="js/sketches/TariffGraph.js"></script> -->
   <script src="js/sketches/GDPComps.js"></script>
   <script src="js/sketches/TradeAndTariff.js"></script>
   <script src="js/sketches/Forecast.js"></script>
-
+  <script src="js/sketches/TariffViz.js"></script>
   <!-- Map Scripts -->
   <script src="data/gunner/country.js"></script>
   <script src="js/sketches/TradeMap.js"></script>

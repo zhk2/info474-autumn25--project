@@ -31,7 +31,7 @@
         selectedYear = p.int(yearSelect.value());
       });
 
-      canvas.parent('viz-container-3'); 
+      canvas.parent('viz-container-x'); 
     };
 
     p.draw = function() {
