@@ -12,8 +12,5 @@ new p5(TradeMap)
 
 new p5(TariffViz)
 
-// 
-new p5(TradeAndTariff)
-
 // Last Viz
 new p5(Forecast)
