@@ -58,7 +58,12 @@
         if (!p.countries.includes(country)) p.countries.push(country);
       }
 
-      p.countries.sort();
+      // Sort with China first
+      p.countries.sort((a, b) => {
+        if (a === "China") return -1;
+        if (b === "China") return 1;
+        return a.localeCompare(b);
+      });
       console.log("Countries after aggregation:", p.countries);
     };
 
@@ -72,22 +77,40 @@
         return;
       }
 
-      // Create wrapper div for dropdown
+      // Create wrapper div for dropdown AFTER canvas
       const dropdownWrapper = document.createElement("div");
       dropdownWrapper.style.textAlign = "center";
-      dropdownWrapper.style.marginBottom = "16px";
-      container.insertBefore(dropdownWrapper, container.firstChild);
+      dropdownWrapper.style.marginTop = "16px";
+      container.appendChild(dropdownWrapper);
 
       // Dropdown
       p.dropdown = p.createSelect();
-      p.dropdown.option("-- Select a Country --");
       p.countries.forEach((c) => p.dropdown.option(c));
       p.dropdown.parent(dropdownWrapper);
       p.dropdown.addClass("form-select");
       p.dropdown.style("width", "260px");
+      
+      // Set China as default
+      p.dropdown.selected("China");
+      
       p.dropdown.changed(() => p.redraw());
 
       p._controlsSetup = true;
+    };
+
+    p.drawHorizontalBars = function () {
+      const chartBottom = p.height - 80;
+      const chartTop = p.height - 330;
+      
+      // Alternating bars
+      p.noStroke();
+      for (let i = 0; i < 5; i++) {
+        if (i % 2 === 0) {
+          p.fill(245, 245, 245); // Light gray for even bars
+          const barHeight = (chartBottom - chartTop) / 5;
+          p.rect(0, chartTop + (i * barHeight), p.width, barHeight);
+        }
+      }
     };
 
     p.drawGradientBackground = function () {
@@ -96,8 +119,8 @@
       for (let i = 0; i < gradSteps; i++) {
         const inter = i / gradSteps;
         const c = p.lerpColor(
-          p.color("#fafafa"),
-          p.color("#fafafa"),
+          p.color('#fafafa'),
+          p.color('#fafafa'),
           inter
         );
         p.fill(c);
@@ -137,79 +160,140 @@
     };
 
     p.drawBars = function (before, after, country) {
+      // USD formatter
+      const formatUSD = (val) => {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          currencyDisplay: "code",
+          maximumFractionDigits: 0
+        }).format(val);
+      };
+    
+      // Ensure numbers
+      before.total_imports_country = Number(before.total_imports_country) || 0;
+      before.total_exports_country = Number(before.total_exports_country) || 0;
+      before.yoy_trade_balance = Number(before.yoy_trade_balance) || 0;
+    
+      after.total_imports_country = Number(after.total_imports_country) || 0;
+      after.total_exports_country = Number(after.total_exports_country) || 0;
+      after.yoy_trade_balance = Number(after.yoy_trade_balance) || 0;
+    
       let maxVal = Math.max(
         before.total_imports_country + before.total_exports_country,
         after.total_imports_country + after.total_exports_country
       );
+    
       let barWidth = 50;
       let gap = 10;
       let bars = [];
-
-      // BEFORE 2022
+    
+      // Y-axis setup
+      const yAxisX = 80;
+      const chartBottom = p.height - 80;
+      const chartTop = p.height - 330;
+    
+      p.stroke(200);
+      p.strokeWeight(2);
+      p.line(yAxisX, chartTop, yAxisX, chartBottom);
+    
+      p.textFont("Inter");
+      p.textSize(11);
+      p.fill(102);
+      p.textAlign(p.RIGHT, p.CENTER);
+    
+      // Y-axis ticks
+      const numTicks = 5;
+      for (let i = 0; i <= numTicks; i++) {
+        const tickValue = (maxVal / numTicks) * i;
+        const yPos = p.map(tickValue, 0, maxVal, chartBottom, chartTop);
+    
+        p.stroke(200);
+        p.line(yAxisX - 5, yPos, yAxisX, yPos);
+    
+        // Human readable format
+        p.noStroke();
+        let label;
+        if (tickValue >= 1e12) label = "$" + (tickValue / 1e12).toFixed(1) + "T";
+        else if (tickValue >= 1e9) label = "$" + (tickValue / 1e9).toFixed(1) + "B";
+        else if (tickValue >= 1e6) label = "$" + (tickValue / 1e6).toFixed(1) + "M";
+        else label = "$" + tickValue.toFixed(0);
+    
+        p.text(label + " USD", yAxisX - 10, yPos);
+      }
+    
+      // BEFORE (left)
       let xBefore = p.width / 3;
       let hImpBefore = p.map(before.total_imports_country, 0, maxVal, 0, 250);
       let hExpBefore = p.map(before.total_exports_country, 0, maxVal, 0, 250);
-
+    
+      // Before Imports
       p.fill("#113EA7");
-      p.rect(xBefore - barWidth - gap / 2, p.height - 80 - hImpBefore, barWidth, hImpBefore);
-      bars.push({ 
-        x: xBefore - barWidth - gap / 2, 
-        y: p.height - 80 - hImpBefore, 
-        w: barWidth, 
-        h: hImpBefore, 
-        label: `Imports: ${before.total_imports_country}` 
+      p.rect(xBefore - barWidth - gap / 2, chartBottom - hImpBefore, barWidth, hImpBefore);
+      bars.push({
+        x: xBefore - barWidth - gap / 2,
+        y: chartBottom - hImpBefore,
+        w: barWidth,
+        h: hImpBefore,
+        label: `Imports: ${formatUSD(before.total_imports_country)}`
       });
-
+    
+      // Before Exports
       p.fill("#F57A00");
-      p.rect(xBefore + gap / 2, p.height - 80 - hExpBefore, barWidth, hExpBefore);
-      bars.push({ 
-        x: xBefore + gap / 2, 
-        y: p.height - 80 - hExpBefore, 
-        w: barWidth, 
-        h: hExpBefore, 
-        label: `Exports: ${before.total_exports_country}` 
+      p.rect(xBefore + gap / 2, chartBottom - hExpBefore, barWidth, hExpBefore);
+      bars.push({
+        x: xBefore + gap / 2,
+        y: chartBottom - hExpBefore,
+        w: barWidth,
+        h: hExpBefore,
+        label: `Exports: ${formatUSD(before.total_exports_country)}`
       });
-
+    
+      // Before Trade Balance
       const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
       p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
-      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 320);
+      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, chartTop - 10);
       p.fill(0);
-      p.text("Before Tariff (2022)", xBefore, p.height - 40);
-
-      // AFTER 2024
+      p.text("Before Tariff (2022)", xBefore, chartBottom + 40);
+    
+      // AFTER (right)
       let xAfter = (2 * p.width) / 3;
       let hImpAfter = p.map(after.total_imports_country, 0, maxVal, 0, 250);
       let hExpAfter = p.map(after.total_exports_country, 0, maxVal, 0, 250);
-
+    
+      // After Imports
       p.fill("#113EA7");
-      p.rect(xAfter - barWidth - gap / 2, p.height - 80 - hImpAfter, barWidth, hImpAfter);
-      bars.push({ 
-        x: xAfter - barWidth - gap / 2, 
-        y: p.height - 80 - hImpAfter, 
-        w: barWidth, 
-        h: hImpAfter, 
-        label: `Imports: ${after.total_imports_country}` 
+      p.rect(xAfter - barWidth - gap / 2, chartBottom - hImpAfter, barWidth, hImpAfter);
+      bars.push({
+        x: xAfter - barWidth - gap / 2,
+        y: chartBottom - hImpAfter,
+        w: barWidth,
+        h: hImpAfter,
+        label: `Imports: ${formatUSD(after.total_imports_country)}`
       });
-
+    
+      // After Exports  (THIS WAS THE MISSING BAR)
       p.fill("#F57A00");
-      p.rect(xAfter + gap / 2, p.height - 80 - hExpAfter, barWidth, hExpAfter);
-      bars.push({ 
-        x: xAfter + gap / 2, 
-        y: p.height - 80 - hExpAfter, 
-        w: barWidth, 
-        h: hExpAfter, 
-        label: `Exports: ${after.total_exports_country}` 
+      p.rect(xAfter + gap / 2, chartBottom - hExpAfter, barWidth, hExpAfter);
+      bars.push({
+        x: xAfter + gap / 2,
+        y: chartBottom - hExpAfter,
+        w: barWidth,
+        h: hExpAfter,
+        label: `Exports: ${formatUSD(after.total_exports_country)}`
       });
-
+    
+      // After Trade Balance
       const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
       p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
-      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 320);
+      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, chartTop - 10);
       p.fill(0);
-      p.text("After Tariff (2024)", xAfter, p.height - 40);
-
+      p.text("After Tariff (2024)", xAfter, chartBottom + 40);
+    
       return bars;
     };
+    
 
     p.drawTooltips = function (bars) {
       bars.forEach((b) => {
@@ -239,8 +323,8 @@
     p.draw = function () {
       if (!p._controlsSetup || !p._dataLoaded) return;
 
-      // Draw gradient background
       p.drawGradientBackground();
+      p.drawHorizontalBars();
 
       if (!p.dropdown || !p.countries.length) {
         p.fill(0);
@@ -250,7 +334,7 @@
       }
 
       let country = p.dropdown.value();
-      if (!country || country === "-- Select a Country --") {
+      if (!country) {
         p.fill(0);
         p.textAlign(p.LEFT);
         p.text("Select a country to view data", 20, 40);
@@ -267,10 +351,6 @@
         total_exports_country: 0, 
         yoy_trade_balance: 0 
       };
-
-      before.total_imports_country = Number(before.total_imports_country) || 0;
-      before.total_exports_country = Number(before.total_exports_country) || 0;
-      before.yoy_trade_balance = Number(before.yoy_trade_balance) || 0;
 
       after.total_imports_country = Number(after.total_imports_country) || 0;
       after.total_exports_country = Number(after.total_exports_country) || 0;

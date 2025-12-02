@@ -148,8 +148,7 @@
       p.draw = function () {
         if (!p._controlsSetup) p.setupControls();
   
-        // White background
-        p.background(255);
+        p.background("#fafafa");
   
         if (!p.periodLabels.length) {
           p.fill(102, 102, 102);
