@@ -13,3 +13,5 @@ new p5(GDPComps)
 new p5(TradeMap)
 
 new p5(TradeAndTariff)
+
+new p5(Forecast)
