@@ -9,3 +9,5 @@ new p5(TariffGraph)
 
 // Consumer impact
 new p5(GDPComps)
+
+new p5(TradeMap)
