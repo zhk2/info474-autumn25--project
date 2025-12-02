@@ -56,15 +56,11 @@
         
         var makeChart = function() {
             p.noStroke();
-            p.fill(255);
-            p.rect(250, 600, 800, 200);
-            
-            p.stroke(0);
+            p.rect(250, 600, 800, 150);
+            p.fill('#fafafa')
             p.strokeWeight(4);
-            p.noFill();
-            p.rect(250, 600, 800, 200);
+            p.rect(250, 600, 800, 150);
             
-            p.noStroke();
             p.fill(0);
             p.textSize(22);
             p.textAlign(p.LEFT, p.TOP);
@@ -99,7 +95,7 @@
                 }
             }
             
-            return -1;
+            return 0;
         };
         
         var drawModeButtons = function() {
@@ -138,7 +134,7 @@
         };
         
         p.setup = function() {
-            var canvas = p.createCanvas(1200, 800);
+            canvas = p.createCanvas(1200, 800);
             canvas.parent('viz-container-1'); 
             
             data = tradeTable.getRows().map(function(row) {
@@ -155,12 +151,12 @@
                     country[i].polygons = convertPathToPolygons(country[i].vertexPoint);
                 }
             } else {
-                console.error("'country' array not found. Make sure country.js is loaded first.");
+                console.error("country' array not found. Make sure country.js is loaded first.");
             }
         };
         
         p.draw = function() {
-            p.background(255);
+            p.background("#fafafa");
             
             if (typeof country === 'undefined') {
                 p.fill(0);
@@ -169,7 +165,7 @@
                 return;
             }
             
-            p.fill(100);
+            p.fill(0);
             p.stroke(255);
             p.strokeWeight(1);
             
