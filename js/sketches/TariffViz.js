@@ -316,7 +316,6 @@
     p.setup = function () {
       let canvas = p.createCanvas(900, 500);
       canvas.parent("viz-container-4");
-      textFont('serif');
       
       p.initData();
     };
@@ -366,7 +365,7 @@
       }
 
       // Title
-      p.textFont('Spectral');
+      // p.textFont('Spectral');
       p.textSize(20);
       p.textStyle(p.BOLD);
       p.fill(0);
