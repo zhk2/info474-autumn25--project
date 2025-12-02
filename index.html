@@ -1,91 +1,118 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>Scrolling Sections</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <!-- Styles removed for now. Needs to be re-written. -->
-  <!-- <link rel="stylesheet" type="text/css" href="css/style.css" />  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Trade War — NYT Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-neutral-50 text-neutral-900 font-serif">
+  <div class="max-w-4xl mx-auto px-6 py-12">
 
-<body>
-  <div class="container">
-    <h1 class="text-primary">The Trade War</h1>
-    <h5>How Tariffs and Global Trade Affect the World at Large</h5>
-    <div id='sections'>
+    <!-- Header -->
+    <header class="mb-16 text-center border-b pb-8">
+      <h1 class="text-5xl font-bold tracking-wide">The Trade War</h1>
+      <h2 class="mt-4 text-xl text-neutral-700 italic">How Tariffs and Global Trade Affect the World at Large</h2>
+    </header>
+
+    <!-- Intro Sections -->
+    <section id="sections" class="space-y-10 leading-relaxed text-lg">
       <p>
         On June 17th, 1930, President Herbert Hoover signed a piece of legislation that over one 
         thousand economists had begged him not to sign. Within two years, global trade had collapsed
         by 66 percent. Within three years, unemployment in America had gone from 8 to 25 percent. 
         And it started because a senator from Utah really wanted to protect sugar beets.
       </p>
+
       <p>
-        Reed Smoot had been a senator from Utah for 27 years. He was also a high-ranking apostle 
-        in the Mormon Church, one of the first to serve in the Senate. His confirmation hearings alone 
-        had taken four years because of controversy over whether a church leader should hold federal office,
+        Reed Smoot had been a senator from Utah for 27 years. His confirmation hearings alone 
+        had taken four years because of controversy over whether a Mormon church leader should hold federal office,
         but despite navigating decades of religious controversy, Smoot would become most famous for 
         co-sponsoring the Smoot-Hawley Tariff Act.
       </p>
+
       <p>
         The tariff started small; Smoot wanted to protect Utah's sugar beet farmers. Then every other 
         congressman wanted to protect their district too. By the time it passed, over 20,000 goods had 
         new tariffs. The average tariff rate jumped from 45% to nearly 60%. Within three years, U.S. imports 
         fell 61%. Exports fell 67%. And while the Great Depression was already underway, economists widely 
-        agree that Smoot-Hawley made it catastrophically worse.
+        agree that Smoot-Hawley made it catastrophically worse. By 1934, the Reciprocal Tariff Act had reversed
+        many of the tariffs imposed by the Smoot-Hawley Act.
       </p>
+
       <p>
-        Our goal is to explore what international trade looks like today, and make sense of the causes - and effects - 
+        Since the Great Depression, international trade has increased significantly, and plays a large part in our 
+        global economy and the effects it has on the people living in it.
+      </p>
+
+      <p class="italic">
+        Our goal is to explore what international trade looks like today, and make sense of the causes — and effects — 
         of tariffs.
       </p>
-      <div id="section-1">
-        <h1>Viz 1: Trade between different countries</h1>
-        <p>
-          In the present day, International trade accounts for a large amount of value created in the global 
-          economy. Much of 
-        </p>
-        <div id="viz-container-1"></div>
-      </div>
-      <div id="section-1"></div>
-        <h1>Viz 2: The Key Players</h1>
-        <p>
-          Globally, there are a few powerhouses that drive 
-          massive amounts of global trade, importing and exporting 
-          trillions of dollars of goods between each other. 
-        </p>
-        <div id="viz-container-2"></div>
-      </div>
-      <div id="section-3"></div>
-        <h1>Viz 3: </h1>
-        <div id="viz-container-3"></div>
-      </div>
-      <div id="section-4"></div>
-        <h1>Viz 4: </h1>
-        <div id="viz-container-4"></div>
-      </div>
-      <div id="section-5"></div>
-        <h1>Viz 5: </h1>
-        <div id="viz-container-5"></div>
-      </div>
-      <div id="section-6"></div>
-        <h1>Viz 6: </h1>
-        <p>Nothing here yet</p>
-        <div id="viz-container-6"></div>
-      </div>
-    </div>
+    </section>
+
+    <!-- Viz Section Template -->
+    <section class="mt-20 space-y-6">
+      <h1 class="text-3xl font-bold tracking-tight">How Different Countries Trade</h1>
+      <p class="text-lg leading-relaxed">
+        International trade is the system by which countries exchange goods and services across borders. 
+        Nations export what they produce efficiently and import what they need, creating a complex web of 
+        economic relationships that spans the entire globe.
+      </p>
+
+      <p class="text-lg leading-relaxed">
+        The interactive visualization below displays bilateral trade data between countries. Select an 
+        exporter and an importer to see the dollar value of trade flowing between them.
+      </p>
+
+      <div id="viz-container-1" class="w-full mx-auto" style=""></div>
+    </section>
+
+    <!-- Viz 2 -->
+    <section class="mt-24 space-y-6">
+      <h1 class="text-3xl font-bold tracking-tight">Viz 2: The Key Players</h1>
+      <p class="text-lg leading-relaxed">
+        Globally, there are a few powerhouses that drive massive amounts of global trade, importing and exporting 
+        trillions of dollars of goods between each other.
+      </p>
+      <div id="viz-container-2" class="w-full mx-auto" style=""></div>
+    </section>
+
+    <!-- Viz 3 -->
+    <section class="mt-24 space-y-6">
+      <h1 class="text-3xl font-bold tracking-tight">Viz 3</h1>
+      <div id="viz-container-3" class="w-full mx-auto" style=""></div>
+    </section>
+
+    <!-- Viz 4 -->
+    <section class="mt-24 space-y-6">
+      <h1 class="text-3xl font-bold tracking-tight">Viz 4</h1>
+      <div id="viz-container-4" class="w-full mx-auto" style=""></div>
+    </section>
+
+    <!-- Viz 5 -->
+    <section class="mt-24 space-y-6">
+      <h1 class="text-3xl font-bold tracking-tight">Viz 5</h1>
+      <div id="viz-container-5" class="w-full mx-auto" style=""></div>
+    </section>
+
+    <!-- Viz 6 -->
+    <section class="mt-24 space-y-6 mb-20">
+      <h1 class="text-3xl font-bold tracking-tight">Viz 6</h1>
+      <p class="text-lg leading-relaxed">Nothing here yet</p>
+      <div id="viz-container-6" class="w-full mx-auto" style=""></div>
+    </section>
+
   </div>
-  <!-- p5.js (using CDN) -->
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
-  <!-- VIZ-es -->
   <script src="js/sketches/GDPBar.js"></script>
   <script src="js/sketches/GDPStackedBar.js"></script>
   <script src="js/sketches/TariffGraph.js"></script>
   <script src="js/sketches/GDPComps.js"></script>
-
-  <!-- Map Files -->
   <script src="data/gunner/country.js"></script>
   <script src="js/sketches/TradeMap.js"></script>
-
-  <!-- main (runs after sketches are initialized) -->
   <script src="main.js"></script>
 </body>
 </html>
