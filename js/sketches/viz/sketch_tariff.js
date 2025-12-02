@@ -132,6 +132,7 @@
 
       let country = this.dropdown.value();
       if (!country || country === "-- Select a Country --") {
+        p.fill(0);
         p.text("Select a country to view data", 20, 40);
         return;
       }
@@ -153,6 +154,10 @@
         return;
       }
 
+      // title 
+      p.textFont('Spectral');
+      p.textSize(20);
+      p.textStyle(p.BOLD);
       p.fill(0);
       p.textAlign(p.CENTER);
       p.text(`Imports and Exports of ${country} Before and After Tariff`, p.width / 2, 30);
