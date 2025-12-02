@@ -107,7 +107,8 @@
 
       // Year selector
       yearSelect = p.createSelect();
-      yearSelect.position(50, 50);
+      yearSelect.parent('viz-container-3');
+      yearSelect.position(20, 20);
       for (let y = 2023; y <= 2023; y++) {
         yearSelect.option(y);
       }
@@ -165,4 +166,3 @@
   }
   window.StackedTopTenGDPGraph = StackedTopTenGDPGraph;
 })();
-
