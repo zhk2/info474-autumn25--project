@@ -73,6 +73,7 @@
                 p.text('2015 — 2024', cx, cy + 130);
 
             } else if (ai === 1) {
+                p.background(250, 249, 246);
                 // Overview screen: draw image
                 if (this.overviewImg) {
                     p.image(this.overviewImg, 0, 0, w, h);
@@ -89,7 +90,7 @@
     };
 })();
 
-// --- Main p5.js sketch using VizTitle ---
+//
 let ai = 0; // 0 = main title, 1 = overview image
 
 function preload() {
