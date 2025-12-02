@@ -316,6 +316,7 @@
     p.setup = function () {
       let canvas = p.createCanvas(900, 500);
       canvas.parent("viz-container-4");
+      textFont('serif');
       
       p.initData();
     };
