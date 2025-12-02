@@ -10,7 +10,10 @@ new p5(GDPComps)
 // Map
 new p5(TradeMap)
 
+// 
 new p5(TariffViz)
 
 // Last Viz
 new p5(Forecast)
+
+new p5(ConsumersViz)
