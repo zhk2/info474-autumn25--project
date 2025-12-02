@@ -139,7 +139,7 @@
         
         p.setup = function() {
             var canvas = p.createCanvas(1200, 800);
-            canvas.parent('viz-container-5'); // Adjust container ID as needed
+            canvas.parent('viz-container-1'); 
             
             data = tradeTable.getRows().map(function(row) {
                 return {
