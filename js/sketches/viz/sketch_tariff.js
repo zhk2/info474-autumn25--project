@@ -58,25 +58,47 @@
       console.log("🌍 Countries after aggregation:", this.countries);
     },
 
-    setupControls(p) {
+      setupControls(p) {
       if (this._controlsSetup || !this._dataLoaded) return;
 
+      // Left-hand narrative section for this step
       this.sectionEl = document.querySelector('section[data-active-index="4"]');
       if (!this.sectionEl) {
         console.error("❌ Section 4 not found");
         return;
       }
       this.sectionEl.style.position = "relative";
-      this.sectionEl.style.minHeight = "600px";
+      this.sectionEl.style.minHeight = "650px";
 
-      this.canvas = p.createCanvas(900, 500);
-      this.canvas.parent(this.sectionEl);
+      // Shared right-hand visualization container (#vis)
+      const visContainer = document.getElementById("vis");
+      if (!visContainer) {
+        console.error("❌ #vis container not found");
+        return;
+      }
 
+      // Clear anything from previous step and match spacing of other vis
+      visContainer.innerHTML = "";
+      visContainer.style.display = "flex";
+      visContainer.style.flexDirection = "column";   // dropdown on top, chart below
+      visContainer.style.alignItems = "center";
+      visContainer.style.justifyContent = "center";
+
+      // Dropdown in same container as canvas
       this.dropdown = p.createSelect();
-      this.dropdown.parent(this.sectionEl);
       this.dropdown.option("-- Select a Country --");
       this.countries.forEach((c) => this.dropdown.option(c));
+      this.dropdown.parent(visContainer);
+      this.dropdown.addClass("form-select");
+      this.dropdown.style("width", "260px");
+      this.dropdown.style("margin-bottom", "16px");
       this.dropdown.changed(() => p.redraw());
+
+      // Canvas directly under dropdown
+      this.canvas = p.createCanvas(900, 500);
+      this.canvas.parent(visContainer);
+      this.canvas.style("display", "block");
+      this.canvas.style("margin", "0 auto");
 
       this._controlsSetup = true;
     },

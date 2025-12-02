@@ -56,35 +56,59 @@
       console.log("🌍 Countries after aggregation:", this.countries);
     },
 
-    setupControls(p) {
-      if (this._controlsSetup || !this._dataLoaded) return;
+  setupControls(p) {
+    if (this._controlsSetup || !this._dataLoaded) return;
 
-      this.sectionEl = document.querySelector('section[data-active-index="5"]');
-      if (!this.sectionEl) {
-        console.error("❌ Section 5 not found");
-        return;
-      }
-      this.sectionEl.style.position = "relative";
-      this.sectionEl.style.minHeight = "600px";
+    // Left-hand narrative section for this step
+    this.sectionEl = document.querySelector('section[data-active-index="5"]');
+    if (!this.sectionEl) {
+      console.error("❌ Section 5 not found");
+      return;
+    }
+    this.sectionEl.style.position = "relative";
+    this.sectionEl.style.minHeight = "650px";
 
-      this.canvas = p.createCanvas(900, 500);
-      this.canvas.parent(this.sectionEl);
+    // Shared right-hand visualization container (#vis)
+    const visContainer = document.getElementById("vis");
+    if (!visContainer) {
+      console.error("❌ #vis container not found");
+      return;
+    }
 
-      this.dropdown = p.createSelect();
-      this.dropdown.parent(this.sectionEl);
-      this.dropdown.option("-- Select a Country --");
-      this.countries.forEach((c) => this.dropdown.option(c));
-      this.dropdown.changed(() => p.redraw());
+    // Make #vis stack children vertically and center them
+    visContainer.innerHTML = "";                     // clear any previous sketch
+    visContainer.style.display = "flex";
+    visContainer.style.flexDirection = "column";     // dropdown on top, canvas below
+    visContainer.style.alignItems = "center";
+    visContainer.style.justifyContent = "center";
 
-      this._controlsSetup = true;
-    },
+    // Dropdown goes in #vis, above the canvas
+    this.dropdown = p.createSelect();
+    this.dropdown.option("-- Select a Country --");
+    this.countries.forEach((c) => this.dropdown.option(c));
+    this.dropdown.parent(visContainer);
+    this.dropdown.addClass("form-select");
+    this.dropdown.style("margin-bottom", "16px");
+    this.dropdown.style("width", "260px");
+
+    this.dropdown.changed(() => p.redraw());
+
+    // Canvas goes in the same #vis container, under the dropdown
+    this.canvas = p.createCanvas(900, 500);
+    this.canvas.parent(visContainer);
+    this.canvas.style("display", "block");
+    this.canvas.style("margin", "0 auto");
+
+    this._controlsSetup = true;
+  },
 
     draw(p) {
       if (!this._controlsSetup || !this._dataLoaded) return;
       if (!this.sectionEl) return;
 
-      const sectionVisible = this.sectionEl.getBoundingClientRect().top < window.innerHeight &&
-                             this.sectionEl.getBoundingClientRect().bottom > 0;
+      // Show / hide dropdown based on whether this step is on screen
+      const rect = this.sectionEl.getBoundingClientRect();
+      const sectionVisible = rect.top < window.innerHeight && rect.bottom > 0;
       if (sectionVisible) this.dropdown.show();
       else this.dropdown.hide();
 
@@ -93,12 +117,14 @@
       p.textSize(18);
 
       if (!this.dropdown || !this.countries.length) {
+        p.textAlign(p.LEFT, p.TOP);
         p.text("Loading GDP data...", 20, 40);
         return;
       }
 
       let country = this.dropdown.value();
       if (!country || country === "-- Select a Country --") {
+        p.textAlign(p.LEFT, p.TOP);
         p.text("Select a country to view data", 20, 40);
         return;
       }
@@ -112,6 +138,7 @@
       after.yoy_trade_balance = Number(after.yoy_trade_balance) || 0;
 
       if (before.gdp_usd === 0 && after.gdp_usd === 0) {
+        p.textAlign(p.CENTER, p.CENTER);
         p.text("No GDP data available for this country", p.width / 2, p.height / 2);
         return;
       }
@@ -120,78 +147,119 @@
       p.text(`GDP of ${country} Before and After Tariff`, p.width / 2, 30);
 
       // --- Legend ---
-      const legendX = 50;
-      const legendY = 60;
-      const spacing = 250;
+      const legendX = 60;
+      const legendY = 70;
+      const spacing = 220;
 
-      p.fill("#113EA7"); p.rect(legendX, legendY, 15, 15);
-      p.fill(0); p.textAlign(p.LEFT, p.CENTER); p.text("GDP (USD)", legendX + 20, legendY + 7.5);
+      p.rectMode(p.CORNER);
 
-      p.fill("#5DD548"); p.rect(legendX + spacing, legendY, 15, 15);
-      p.fill(0); p.text("Trade Balance ↑", legendX + spacing + 20, legendY + 7.5);
+      p.fill("#113EA7");
+      p.rect(legendX, legendY, 15, 15);
+      p.fill(0);
+      p.textAlign(p.LEFT, p.CENTER);
+      p.text("GDP (USD)", legendX + 22, legendY + 7.5);
 
-      p.fill("#FC3640"); p.rect(legendX + spacing*2, legendY, 15, 15);
-      p.fill(0); p.text("Trade Balance ↓", legendX + spacing*2 + 20, legendY + 7.5);
+      p.fill("#5DD548");
+      p.rect(legendX + spacing, legendY, 15, 15);
+      p.fill(0);
+      p.text("Trade Balance ↑", legendX + spacing + 22, legendY + 7.5);
+
+      p.fill("#FC3640");
+      p.rect(legendX + spacing * 2, legendY, 15, 15);
+      p.fill(0);
+      p.text("Trade Balance ↓", legendX + spacing * 2 + 22, legendY + 7.5);
 
       // --- Bars ---
       let maxVal = Math.max(before.gdp_usd, after.gdp_usd);
-      let barWidth = 50;
-      let minBarHeight = 10; // Ensure small values are visible
+      let barWidth = 60;
+      let minBarHeight = 12;
       let bars = [];
+
+      const chartBottom = p.height - 80;
+      const chartTop = chartBottom - 260;
 
       // BEFORE 2022
       let xBefore = p.width / 3;
-      let hGDPBefore = p.map(before.gdp_usd, 0, maxVal, 0, 250);
+      let hGDPBefore = p.map(before.gdp_usd, 0, maxVal, 0, chartBottom - chartTop);
       if (hGDPBefore < minBarHeight && before.gdp_usd > 0) hGDPBefore = minBarHeight;
 
       p.fill("#113EA7");
-      p.rect(xBefore - barWidth/2, p.height - 80 - hGDPBefore, barWidth, hGDPBefore);
-      bars.push({ x: xBefore - barWidth/2, y: p.height - 80 - hGDPBefore, w: barWidth, h: hGDPBefore, label: `GDP: ${before.gdp_usd}` });
+      p.rect(
+        xBefore - barWidth / 2,
+        chartBottom - hGDPBefore,
+        barWidth,
+        hGDPBefore
+      );
+      bars.push({
+        x: xBefore - barWidth / 2,
+        y: chartBottom - hGDPBefore,
+        w: barWidth,
+        h: hGDPBefore,
+        label: `GDP: ${before.gdp_usd.toLocaleString()}`
+      });
 
       // Trade balance above bar
       const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
       p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
-      p.textAlign(p.CENTER);
-      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
+      p.textAlign(p.CENTER, p.BOTTOM);
+      p.text(
+        `Trade Balance: ${roundedBeforeTB}`,
+        xBefore,
+        chartBottom - hGDPBefore - 10
+      );
       p.fill(0);
-      p.text("Before Tariff (2022)", xBefore, p.height - 40);
+      p.textAlign(p.CENTER, p.TOP);
+      p.text("Before Tariff (2022)", xBefore, chartBottom + 10);
 
       // AFTER 2024
       let xAfter = (2 * p.width) / 3;
-      let hGDPAftr = p.map(after.gdp_usd, 0, maxVal, 0, 250);
+      let hGDPAftr = p.map(after.gdp_usd, 0, maxVal, 0, chartBottom - chartTop);
       if (hGDPAftr < minBarHeight && after.gdp_usd > 0) hGDPAftr = minBarHeight;
 
       p.fill("#113EA7");
-      p.rect(xAfter - barWidth/2, p.height - 80 - hGDPAftr, barWidth, hGDPAftr);
-      bars.push({ x: xAfter - barWidth/2, y: p.height - 80 - hGDPAftr, w: barWidth, h: hGDPAftr, label: `GDP: ${after.gdp_usd}` });
+      p.rect(
+        xAfter - barWidth / 2,
+        chartBottom - hGDPAftr,
+        barWidth,
+        hGDPAftr
+      );
+      bars.push({
+        x: xAfter - barWidth / 2,
+        y: chartBottom - hGDPAftr,
+        w: barWidth,
+        h: hGDPAftr,
+        label: `GDP: ${after.gdp_usd.toLocaleString()}`
+      });
 
       const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
       p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
-      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 80 - hGDPAftr - 15);
+      p.textAlign(p.CENTER, p.BOTTOM);
+      p.text(
+        `Trade Balance: ${roundedAfterTB}`,
+        xAfter,
+        chartBottom - hGDPAftr - 10
+      );
       p.fill(0);
-      p.text("After Tariff (2024)", xAfter, p.height - 40);
+      p.textAlign(p.CENTER, p.TOP);
+      p.text("After Tariff (2024)", xAfter, chartBottom + 10);
 
       // --- Hover tooltips ---
       bars.forEach((b) => {
-        if (p.mouseX > b.x && p.mouseX < b.x + b.w &&
-            p.mouseY > b.y && p.mouseY < b.y + b.h) {
-          p.fill(255, 255, 200);
+        if (
+          p.mouseX > b.x && p.mouseX < b.x + b.w &&
+          p.mouseY > b.y && p.mouseY < b.y + b.h
+        ) {
+          p.fill(255, 255, 230);
           p.stroke(0);
-          p.rect(p.mouseX + 10, p.mouseY - 20, p.textWidth(b.label) + 10, 20);
+          const pad = 6;
+          const tw = p.textWidth(b.label);
+          p.rect(p.mouseX + 10, p.mouseY - 24, tw + pad * 2, 20, 4);
           p.noStroke();
           p.fill(0);
           p.textAlign(p.LEFT, p.CENTER);
-          p.text(b.label, p.mouseX + 15, p.mouseY - 10);
+          p.text(b.label, p.mouseX + 10 + pad, p.mouseY - 14);
         }
       });
     },
   };
 })();
-
-
-
-
-
-
-
-
