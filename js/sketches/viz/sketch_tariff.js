@@ -16,14 +16,14 @@
         "header",
         (table) => {
           this.table = table;
-          console.log("✅ CSV loaded:", table.getRowCount(), "rows");
+          console.log("CSV loaded:", table.getRowCount(), "rows");
           this.processData(table);
           this._dataLoaded = true;
 
           if (!this._controlsSetup) this.setupControls(p);
           p.redraw();
         },
-        () => console.error("❌ Failed to load CSV")
+        () => console.error("Failed to load CSV")
       );
     },
 
@@ -55,7 +55,7 @@
       }
 
       this.countries.sort();
-      console.log("🌍 Countries after aggregation:", this.countries);
+      console.log("Countries after aggregation:", this.countries);
     },
 
       setupControls(p) {
@@ -64,7 +64,7 @@
       // Left-hand narrative section for this step
       this.sectionEl = document.querySelector('section[data-active-index="4"]');
       if (!this.sectionEl) {
-        console.error("❌ Section 4 not found");
+        console.error("Section 4 not found");
         return;
       }
       this.sectionEl.style.position = "relative";
@@ -73,7 +73,7 @@
       // Shared right-hand visualization container (#vis)
       const visContainer = document.getElementById("vis");
       if (!visContainer) {
-        console.error("❌ #vis container not found");
+        console.error("#vis container not found");
         return;
       }
 
@@ -110,10 +110,20 @@
                              this.sectionEl.getBoundingClientRect().bottom > 0;
       if (sectionVisible) this.dropdown.show();
       else this.dropdown.hide();
+      // Elegant gradient background
+      const gradSteps = 30;
+      p.noStroke();
+      for (let i = 0; i < gradSteps; i++) {
+        const inter = i / gradSteps;
+        const c = p.lerpColor(
+          p.color(250, 249, 246),
+          p.color(245, 242, 235),
+          inter
+        );
+        p.fill(c);
+        p.rect(0, (p.height / gradSteps) * i, p.width, p.height / gradSteps + 1);
+      }
 
-      p.background(255);
-      p.fill(0);
-      p.textSize(18);
 
       if (!this.dropdown || !this.countries.length) {
         p.text("Loading trade data...", 20, 40);
