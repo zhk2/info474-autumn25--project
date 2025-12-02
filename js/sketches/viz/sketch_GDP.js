@@ -163,6 +163,11 @@
       p.text(`GDP of ${country} Before and After Tariff`, p.width / 2, 30);
 
       // --- Legend ---
+
+      p.textFont('Inter');
+      p.textSize(16);
+      p.textStyle(p.NORMAL);
+
       const legendX = 60;
       const legendY = 70;
       const spacing = 220;
