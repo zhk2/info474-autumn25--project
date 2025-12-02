@@ -153,6 +153,7 @@
         return;
       }
 
+      p.fill(0);
       p.textAlign(p.CENTER);
       p.text(`Imports and Exports of ${country} Before and After Tariff`, p.width / 2, 30);
 
