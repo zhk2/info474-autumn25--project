@@ -117,12 +117,12 @@
         p.fill("#5DD548"); 
         p.rect(legendX + spacing, legendY, 15, 15);
         p.fill(0); 
-        p.text("Trade Balance ↑", legendX + spacing + 20, legendY + 7.5);
+        p.text(" YOY Trade Balance ↑", legendX + spacing + 20, legendY + 7.5);
   
         p.fill("#FC3640"); 
         p.rect(legendX + spacing * 2, legendY, 15, 15);
         p.fill(0); 
-        p.text("Trade Balance ↓", legendX + spacing * 2 + 20, legendY + 7.5);
+        p.text("YOY Trade Balance ↓", legendX + spacing * 2 + 20, legendY + 7.5);
       };
   
       p.drawBars = function(before, after, country) {
@@ -152,7 +152,7 @@
         p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
         p.textAlign(p.CENTER);
         p.textFont('Georgia, serif');
-        p.text(`Year over Year Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
+        p.text(`Year Over Year Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
         p.fill(0);
         p.text("Before Tariff (2022)", xBefore, p.height - 40);
   
