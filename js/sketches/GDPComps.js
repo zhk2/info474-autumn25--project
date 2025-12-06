@@ -62,7 +62,7 @@
           if (b === "China") return 1;
           return a.localeCompare(b);
         });
-        console.log("🌍 Countries after aggregation:", p.countries);
+        console.log("Countries after aggregation:", p.countries);
       };
   
       p.setupControls = function() {
@@ -108,7 +108,7 @@
         p.textSize(16);
         p.textStyle(p.NORMAL);
   
-        p.fill("#113EA7"); 
+        p.fill("#540c85ff"); 
         p.rect(legendX, legendY, 15, 15);
         p.fill(0); 
         p.textAlign(p.LEFT, p.CENTER); 
