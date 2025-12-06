@@ -136,7 +136,7 @@
         let hGDPBefore = p.map(before.gdp_usd, 0, maxVal, 0, 250);
         if (hGDPBefore < minBarHeight && before.gdp_usd > 0) hGDPBefore = minBarHeight;
   
-        p.fill("#113EA7");
+        p.fill("#540c85ff");
         p.noStroke();
         p.rect(xBefore - barWidth/2, p.height - 80 - hGDPBefore, barWidth, hGDPBefore);
         bars.push({ 
