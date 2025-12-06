@@ -161,7 +161,7 @@
         let hGDPAfter = p.map(after.gdp_usd, 0, maxVal, 0, 250);
         if (hGDPAfter < minBarHeight && after.gdp_usd > 0) hGDPAfter = minBarHeight;
   
-        p.fill("#113EA7");
+        p.fill("#540c85ff");
         p.rect(xAfter - barWidth/2, p.height - 80 - hGDPAfter, barWidth, hGDPAfter);
         bars.push({ 
           x: xAfter - barWidth/2, 
