@@ -147,12 +147,12 @@
           label: `GDP: ${before.gdp_usd}` 
         });
   
-        // Trade balance above bar
+        //  YOY, Trade balance above bar
         const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
         p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
         p.textAlign(p.CENTER);
         p.textFont('Georgia, serif');
-        p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
+        p.text(`Year over Year Trade Balance: ${roundedBeforeTB}`, xBefore, p.height - 80 - hGDPBefore - 15);
         p.fill(0);
         p.text("Before Tariff (2022)", xBefore, p.height - 40);
   
@@ -173,7 +173,7 @@
   
         const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
         p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
-        p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 80 - hGDPAfter - 15);
+        p.text(`Year Over Year Trade Balance: ${roundedAfterTB}`, xAfter, p.height - 80 - hGDPAfter - 15);
         p.fill(0);
         p.text("After Tariff (2024)", xAfter, p.height - 40);
   
