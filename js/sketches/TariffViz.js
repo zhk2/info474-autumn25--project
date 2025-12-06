@@ -151,12 +151,12 @@
       p.fill("#5DD548"); 
       p.rect(legendX + spacing * 2, legendY, 15, 15);
       p.fill(0); 
-      p.text("Year Over Year Trade Balance ↑", legendX + spacing * 2 + 20, legendY + 7.5);
+      p.text("YOY Trade Balance ↑", legendX + spacing * 2 + 20, legendY + 7.5);
 
       p.fill("#FC3640"); 
       p.rect(legendX + spacing * 3, legendY, 15, 15);
       p.fill(0); 
-      p.text("Year Over Year Trade Balance ↓", legendX + spacing * 3 + 20, legendY + 7.5);
+      p.text("YOY Trade Balance ↓", legendX + spacing * 3 + 20, legendY + 7.5);
     };
 
     p.drawBars = function (before, after, country) {
@@ -253,7 +253,7 @@
       const roundedBeforeTB = Math.round(before.yoy_trade_balance * 10) / 10;
       p.fill(roundedBeforeTB >= 0 ? "#5DD548" : "#FC3640");
       p.textAlign(p.CENTER);
-      p.text(`Trade Balance: ${roundedBeforeTB}`, xBefore, chartTop - 10);
+      p.text(`Year Over Year Trade Balance: ${roundedBeforeTB}`, xBefore, chartTop - 10);
       p.fill(0);
       p.text("Before Tariff (2022)", xBefore, chartBottom + 40);
     
@@ -287,7 +287,7 @@
       // After Trade Balance
       const roundedAfterTB = Math.round(after.yoy_trade_balance * 10) / 10;
       p.fill(roundedAfterTB >= 0 ? "#5DD548" : "#FC3640");
-      p.text(`Trade Balance: ${roundedAfterTB}`, xAfter, chartTop - 10);
+      p.text(`Year Over Year Trade Balance: ${roundedAfterTB}`, xAfter, chartTop - 10);
       p.fill(0);
       p.text("After Tariff (2024)", xAfter, chartBottom + 40);
     
