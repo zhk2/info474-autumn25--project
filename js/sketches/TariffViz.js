@@ -151,12 +151,12 @@
       p.fill("#5DD548"); 
       p.rect(legendX + spacing * 2, legendY, 15, 15);
       p.fill(0); 
-      p.text("Trade Balance ↑", legendX + spacing * 2 + 20, legendY + 7.5);
+      p.text("Year Over Year Trade Balance ↑", legendX + spacing * 2 + 20, legendY + 7.5);
 
       p.fill("#FC3640"); 
       p.rect(legendX + spacing * 3, legendY, 15, 15);
       p.fill(0); 
-      p.text("Trade Balance ↓", legendX + spacing * 3 + 20, legendY + 7.5);
+      p.text("Year Over Year Trade Balance ↓", legendX + spacing * 3 + 20, legendY + 7.5);
     };
 
     p.drawBars = function (before, after, country) {
