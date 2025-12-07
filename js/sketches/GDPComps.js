@@ -94,10 +94,36 @@
   
         p._controlsSetup = true;
       };
-  
-      p.drawBackground = function() {
-        p.background("#fafafa");
-      };
+      p.drawHorizontalBars = function () {
+      const chartBottom = p.height - 80;
+      const chartTop = p.height - 330;
+      
+      // Alternating bars
+      p.noStroke();
+      for (let i = 0; i < 5; i++) {
+        if (i % 2 === 0) {
+          p.fill(245, 245, 245); // Light gray for even bars
+          const barHeight = (chartBottom - chartTop) / 5;
+          p.rect(0, chartTop + (i * barHeight), p.width, barHeight);
+        }
+      }
+    };
+
+    p.drawGradientBackground = function () {
+      const gradSteps = 30;
+      p.noStroke();
+      for (let i = 0; i < gradSteps; i++) {
+        const inter = i / gradSteps;
+        const c = p.lerpColor(
+          p.color('#fafafa'),
+          p.color('#fafafa'),
+          inter
+        );
+        p.fill(c);
+        p.rect(0, (p.height / gradSteps) * i, p.width, p.height / gradSteps + 1);
+      }
+    };
+
   
       p.drawLegend = function() {
         const legendX = 50;
