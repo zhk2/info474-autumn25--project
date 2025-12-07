@@ -229,11 +229,27 @@
           const y = marginTop + (chartHeight * i) / 4;
           p.line(marginLeft, y, marginLeft + chartWidth, y);
         }
-  
+
         // Map data points to pixel coordinates
         const mapX = (val) => marginLeft + ((val - tariffMin) / (tariffMax - tariffMin)) * chartWidth;
         const mapY = (val) => marginTop + chartHeight - ((val - tradeMin) / (tradeMax - tradeMin)) * chartHeight;
-  
+
+        // Zero reference line for trade volatility (0.0%)
+        if (tradeMin < 0 && tradeMax > 0) {
+          const y0 = mapY(0);
+          p.stroke(160, 160, 160);
+          p.strokeWeight(1.5);
+          p.line(marginLeft, y0, marginLeft + chartWidth, y0);
+
+          // optional label at the left
+          p.noStroke();
+          p.fill(120);
+          p.textFont("Inter");
+          p.textSize(11);
+          p.textAlign(p.RIGHT, p.BOTTOM);
+          p.text("0.0%", marginLeft - 10, y0 - 2);
+        }
+
         // Draw scatter points
         for (let i = 0; i < n; i++) {
           if (tradeChange[i] !== null) {
@@ -283,7 +299,7 @@
         for (let i = 0; i <= 4; i++) {
           const val = tariffMin + (tariffMax - tariffMin) * (i / 4);
           const x = marginLeft + (chartWidth * i) / 4;
-          p.text((val * 100).toFixed(0) + "%", x, marginTop + chartHeight + 10);
+          p.text((val * 100).toFixed(1) + "%", x, marginTop + chartHeight + 10);
         }
   
         // Y-axis tick labels

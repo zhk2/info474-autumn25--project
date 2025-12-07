@@ -222,8 +222,8 @@
           p.textAlign(p.CENTER, p.BOTTOM);
           p.textFont('Inter');
           const midX = (tx1 + tx2) / 2;
-          p.text("Tariff", midX, marginTop - 6);
-          p.text("hike", midX, marginTop + 8);
+          p.text("Tariff hike", midX, marginTop - 6);
+          p.text("years",      midX, marginTop + 8);
         }
       };
   
