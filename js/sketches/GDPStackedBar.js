@@ -165,7 +165,7 @@
     p.years = [2022, 2023, 2024];
     p.selectedYear = 2024;
     p.showing = "imports"; // "imports" or "exports"
-    p.yearSelect = null;
+    p.yearButtons = [];
     p.toggleButton = null;
     p._controlsSetup = false;
 
@@ -180,10 +180,27 @@
       if (p.showing === "imports") {
         p.showing = "exports";
         p.toggleButton.html('Switch to Imports');
+        p.toggleButton.style('background-color', '#113EA7'); // Blue when showing exports
       } else {
         p.showing = "imports";
         p.toggleButton.html('Switch to Exports');
+        p.toggleButton.style('background-color', '#F57A00'); // Orange when showing imports
       }
+      p.redraw();
+    };
+
+    p.selectYear = function(year) {
+      p.selectedYear = year;
+      // Update button styles
+      p.yearButtons.forEach((btn, idx) => {
+        if (p.years[idx] === year) {
+          btn.style('background-color', '#5C5C5C');
+          btn.style('color', 'white');
+        } else {
+          btn.style('background-color', '#f0f0f0');
+          btn.style('color', '#333');
+        }
+      });
       p.redraw();
     };
 
@@ -219,28 +236,65 @@
       // Create controls wrapper below canvas
       const controlsWrapper = document.createElement("div");
       controlsWrapper.style.textAlign = "center";
-      controlsWrapper.style.marginTop = "16px";
+      controlsWrapper.style.marginTop = "18px";
       controlsWrapper.style.display = "flex";
       controlsWrapper.style.justifyContent = "center";
-      controlsWrapper.style.gap = "16px";
+      controlsWrapper.style.gap = "12px";
+      controlsWrapper.style.alignItems = "center";
       container.appendChild(controlsWrapper);
 
-      // Year selector
-      p.yearSelect = p.createSelect();
-      p.years.forEach((y) => p.yearSelect.option(y));
-      p.yearSelect.selected(p.selectedYear);
-      p.yearSelect.parent(controlsWrapper);
-      p.yearSelect.addClass("form-select");
-      p.yearSelect.style("width", "120px");
-      p.yearSelect.changed(() => {
-        p.selectedYear = parseInt(p.yearSelect.value());
-        p.redraw();
+      // Year label
+      const yearLabel = document.createElement("span");
+      yearLabel.textContent = "Year: ";
+      yearLabel.style.fontFamily = "Inter, sans-serif";
+      yearLabel.style.fontSize = "18px";
+      yearLabel.style.fontWeight = "600";
+      yearLabel.style.marginRight = "4px";
+      controlsWrapper.appendChild(yearLabel);
+
+      // Year buttons
+      p.years.forEach((year, idx) => {
+        const btn = p.createButton(year.toString());
+        btn.parent(controlsWrapper);
+        btn.addClass("btn");
+        btn.style('padding', '8px 20px');
+        btn.style('border', '1px solid #ccc');
+        btn.style('border-radius', '4px');
+        btn.style('cursor', 'pointer');
+        btn.style('font-family', 'Inter, sans-serif');
+        btn.style('font-size', '18px');
+        
+        if (year === p.selectedYear) {
+          btn.style('background-color', '#113EA7');
+          btn.style('color', 'white');
+        } else {
+          btn.style('background-color', '#f0f0f0');
+          btn.style('color', '#333');
+        }
+        
+        btn.mousePressed(() => p.selectYear(year));
+        p.yearButtons.push(btn);
       });
+
+      // Separator
+      const separator = document.createElement("span");
+      separator.textContent = "|";
+      separator.style.margin = "0 8px";
+      separator.style.color = "#ccc";
+      controlsWrapper.appendChild(separator);
 
       // Toggle button
       p.toggleButton = p.createButton('Switch to Exports');
       p.toggleButton.parent(controlsWrapper);
       p.toggleButton.addClass("btn");
+      p.toggleButton.style('padding', '8px 20px');
+      p.toggleButton.style('background-color', '#F57A00');
+      p.toggleButton.style('color', 'white');
+      p.toggleButton.style('border', 'none');
+      p.toggleButton.style('border-radius', '4px');
+      p.toggleButton.style('cursor', 'pointer');
+      p.toggleButton.style('font-family', 'Inter, sans-serif');
+      p.toggleButton.style('font-size', '18px');
       p.toggleButton.mousePressed(p.toggleData);
 
       p._controlsSetup = true;
@@ -255,6 +309,37 @@
         return "$" + (value / 1e6).toFixed(2) + "M";
       }
       return "$" + value.toFixed(0);
+    };
+
+    p.drawGridlines = function(maxVal, margin, chartHeight) {
+      const chartBottom = p.height - margin;
+      const chartTop = margin + 60;
+      const chartRight = p.width - margin;
+      const chartLeft = margin - 60; // Align with y-axis
+
+      const numTicks = 5;
+      
+      // Draw alternating background bands
+      for (let i = 0; i < numTicks; i++) {
+        if (i % 2 === 0) {
+          const y1 = p.map((maxVal / numTicks) * i, 0, maxVal, chartBottom, chartTop);
+          const y2 = p.map((maxVal / numTicks) * (i + 1), 0, maxVal, chartBottom, chartTop);
+          
+          p.noStroke();
+          p.fill(245, 245, 245); // Light gray
+          p.rect(chartLeft, y2, chartRight - chartLeft, y1 - y2);
+        }
+      }
+
+      // Draw gridlines
+      p.stroke(220, 220, 220);
+      p.strokeWeight(1);
+      
+      for (let i = 0; i <= numTicks; i++) {
+        const tickValue = (maxVal / numTicks) * i;
+        const yPos = p.map(tickValue, 0, maxVal, chartBottom, chartTop);
+        p.line(chartLeft, yPos, chartRight, yPos);
+      }
     };
 
     p.drawYAxis = function(maxVal, margin, chartHeight) {
@@ -324,7 +409,7 @@
       const barWidth = (chartWidth / top10.length) * 0.6;
 
       // Set max value to 4 trillion
-      const maxVal = 4000000000000; // 4 trillion
+      const maxVal = 4000000000000; 
 
       // Title
       p.textFont('Spectral');
@@ -337,12 +422,25 @@
         : `Top 10 Countries by Exports (${p.selectedYear})`;
       p.text(title, margin, 30);
 
+      // Subtitle
+      p.textFont('Spectral');
+      p.textSize(14);
+      p.textStyle(p);
+      p.fill(26, 26, 26);
+      p.textAlign(p.LEFT, p.TOP);
+      const subtitle = p.showing === "imports" 
+        ? `Imports: amount a country buys from other nations`
+        : `Exports: amount a country sells to other nations`;
+      p.text(subtitle, margin, 100);
+
+      // Draw gridlines FIRST (behind everything)
+      p.drawGridlines(maxVal, margin, chartHeight);
+
       // Draw Y-axis
       p.drawYAxis(maxVal, margin, chartHeight);
 
       // Draw bars
       const chartBottom = p.height - margin;
-      const chartTop = margin + 60;
       const barColor = p.showing === "imports" ? p.importColor : p.exportColor;
 
       for (let i = 0; i < top10.length; i++) {
@@ -359,20 +457,28 @@
         // Value on top of bar
         p.fill(26, 26, 26);
         p.textFont('Inter');
-        p.textSize(10);
+        p.textSize(11);
         p.textStyle(p.NORMAL);
         p.textAlign(p.CENTER, p.BOTTOM);
         p.text(p.formatValue(value), x + barWidth / 2, chartBottom - barHeight - 5);
 
-        // Country label
-        p.fill(0);
-        p.textSize(12);
+        // Country label - horizontal, larger, and below the chart
+        p.fill(26, 26, 26);
+        p.textSize(13);
+        p.textStyle(p.NORMAL);
         p.textAlign(p.CENTER, p.TOP);
-        p.push();
-        p.translate(x + barWidth / 2, chartBottom + 10);
-        p.rotate(-p.PI / 6); // Angle labels for better fit
-        p.text(d.country, 0, 0);
-        p.pop();
+        
+        // Split long country names if needed
+        let displayName = d.country;
+        if (d.country === "United Kingdom") {
+          displayName = "United\nKingdom";
+        } else if (d.country === "United States") {
+          displayName = "United\nStates";
+        } else if (d.country === "South Korea") {
+          displayName = "South\nKorea";
+        }
+        
+        p.text(displayName, x + barWidth / 2, chartBottom + 15);
       }
 
       // Legend
